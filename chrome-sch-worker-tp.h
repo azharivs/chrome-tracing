@@ -78,28 +78,28 @@ TRACEPOINT_EVENT(
     chrome,
     jsontolttng,
     TP_ARGS(
-        int, tid,
-        int, thread_id,
-    	char, phase,
-    	const unsigned char*, category_group_enabled,
+        char*, phase,
+    	const unsigned char, category_group_enabled,
     	const char*, name,
     	const char*, scope,
     	unsigned long long, id,
-    	unsigned long long, bind_id,
     	int, num_args,
-    	const char* const*, arg_names
-    ),
+    	const char* const, arg_names,
+    	const unsigned char, arg_types,
+    	const unsigned long long, arg_values,
+    	unsigned int, flags
+    	),
     TP_FIELDS(
-        ctf_integer(int, tid, tid)
-        ctf_integer(int, thread_id, thread_id)
-        ctf_integer(char, phase, phase)
-        ctf_integer(const unsigned char*, category_group_enabled, category_group_enabled)
-        ctf_integer(const char*, name, name)
-        ctf_integer(const char*, scope, scope)
+        ctf_string(phase, phase)
+        ctf_integer(const unsigned char, category_group_enabled, category_group_enabled)
+        ctf_string(name, name)
+        ctf_string(scope, scope)
         ctf_integer(unsigned long long, id, id)
-        ctf_integer(unsigned long long, bind_id, bind_id)
         ctf_integer(int, num_args, num_args)
-        ctf_integer(const char* const*, arg_names, arg_names)
+        ctf_string(arg_names, arg_names)
+        ctf_integer(const unsigned char, arg_types, arg_types)
+        ctf_integer(const unsigned long long, arg_values, arg_values)
+        ctf_integer(unsigned int, flags, flags)
     )
 )
 
