@@ -1068,12 +1068,13 @@ TraceEventHandle TraceLog::AddTraceEvent(
 
 // Majid start
 
-                //printf("--- Majid Rezazadeh: TRACEPOINT REGISTERED: %s\n", name);
- void (*tp_ptr)(char , const unsigned char* , const char* , const char* , unsigned long long , int , const char* const* , const unsigned char* , const unsigned long long , unsigned int);
+                //printf("--- Majid Rezazadeh: TRACEPOINT REGISTERED: %s\n", arg_values);
+ //void (*tp_ptr)(char , const char , const char , unsigned long long , int , unsigned int);
+void (*tp_ptr)(int, int, char);
         char *error;
 
         if (!soLoaded){
-            tppHandle = dlopen("/home/majid/Downloads/chromium/src/lib.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            tppHandle = dlopen("/home/majid/Downloads/chromium/src/lib2.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
             if (!tppHandle) {
                  fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
             }
@@ -1084,7 +1085,7 @@ TraceEventHandle TraceLog::AddTraceEvent(
 
         dlerror();
 
-        *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z19trpoint_jsontolttngPchPKcS1_yiS1_hyj");
+        *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z19trpoint_jsontolttngPc");
 
         if ((error = dlerror()) != NULL)  {
              fprintf(stderr, "00: Upon dlsym: %s\n", error);
@@ -1092,8 +1093,9 @@ TraceEventHandle TraceLog::AddTraceEvent(
 
         //pid_t pid = getpid();
         //pid_t tid = syscall(SYS_gettid);
-	//int tid = 5;
-        (*tp_ptr)((char) phase, (const unsigned char*) category_group_enabled, (const char*) name, (const char*) scope, (unsigned long long) id, (int) num_args, (const char* const*) arg_names, (const unsigned char*) arg_types, (const unsigned long long) arg_values, (unsigned int) flags);
+	int tid = 5;
+	(*tp_ptr)((int) num_args, (int) tid, (char) phase);
+        //(*tp_ptr)((char) phase , (const char) name, (const char) scope, (unsigned long long) id, (int) num_args, (unsigned int) flags);
         //(*tp_ptr)((int) tid, (char *) name);
 
         //std::cout << "....." << (int) tid << ": dlsym\n";
