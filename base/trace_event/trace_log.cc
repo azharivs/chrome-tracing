@@ -1070,7 +1070,7 @@ TraceEventHandle TraceLog::AddTraceEvent(
 
                 //printf("--- Majid Rezazadeh: TRACEPOINT REGISTERED: %s\n", arg_values);
  //void (*tp_ptr)(char , const char , const char , unsigned long long , int , unsigned int);
-void (*tp_ptr)(int, int, char);
+void (*tp_ptr)(/*int, int,*/ char);
         char *error;
 
         if (!soLoaded){
@@ -1093,8 +1093,8 @@ void (*tp_ptr)(int, int, char);
 
         //pid_t pid = getpid();
         //pid_t tid = syscall(SYS_gettid);
-	int tid = 5;
-	(*tp_ptr)((int) num_args, (int) tid, (char) phase);
+	//int tid = 5;
+	(*tp_ptr)(/*(int) num_args, (int) tid, */(char) phase);
         //(*tp_ptr)((char) phase , (const char) name, (const char) scope, (unsigned long long) id, (int) num_args, (unsigned int) flags);
         //(*tp_ptr)((int) tid, (char *) name);
 
