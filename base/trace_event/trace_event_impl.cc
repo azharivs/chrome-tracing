@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/*sva begin*/
+#define TRACEPOINT_DEFINE
+#define TRACEPOINT_PROBE_DYNAMIC_LINKAGE
+#include "chrome-sch-worker-tp.h"
+//#include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+/*sva end*/
+
 #include "base/trace_event/trace_event_impl.h"
 
 #include <stddef.h>
@@ -18,6 +28,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_log.h"
+
+static void * tppHandle = NULL;//sva
+static int soLoaded = 0;//sva
 
 namespace base {
 namespace trace_event {
@@ -108,6 +121,43 @@ void TraceEvent::Initialize(
   phase_ = phase;
   flags_ = flags;
   bind_id_ = bind_id;
+
+
+// Majid start
+
+
+ void (*tp_ptr)(int,char *);
+        char *error;
+
+        if (!soLoaded){
+            tppHandle = dlopen("/home/majid/Documents/chromium/src/lib.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                printf("--- Majid Rezazadeh: TRACEPOINT REGISTERED: %s\n", name);
+                soLoaded = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z19trpoint_jsontolttngiicPKhPKcS2_yyiPKS2_");
+
+        if ((error = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error);
+        }
+
+        //pid_t pid = getpid();
+        //pid_t tid = syscall(SYS_gettid);
+	int tid = 5;
+        //(*tp_ptr)(int tid, int thread_id, char phase, const unsigned char* category_group_enabled, const char* name, const char* scope, unsigned long long id, unsigned long long bind_id, int num_args, const char* const* arg_names);
+        (*tp_ptr)((int) tid, (char *) "Majid::Rezazadeh");
+
+        //std::cout << "....." << (int) tid << ": dlsym\n";
+
+
+// Majid end
 
   // Clamp num_args since it may have been set by a third_party library.
   num_args = (num_args > kTraceMaxNumArgs) ? kTraceMaxNumArgs : num_args;

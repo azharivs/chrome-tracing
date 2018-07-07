@@ -15,6 +15,9 @@ declare_args() {
 #sva:      checkout_nacl && !is_ios && !is_android && !is_fuchsia &&
 #sva:      !is_chromecast && current_cpu != "mipsel" && current_cpu != "mips64el" &&
 #sva:      !(is_linux && target_cpu == "arm64") && !(is_win && host_os != "win")
+      #checkout_nacl && !is_ios && !is_android && !is_fuchsia &&
+      #!is_chromecast && current_cpu != "mipsel" && current_cpu != "mips64el" &&
+      #!(is_linux && target_cpu == "arm64") && !(is_win && host_os != "win")
 
   # Non-SFI is not yet supported on mipsel
   enable_nacl_nonsfi = current_cpu != "mipsel" && current_cpu != "mips64el"
