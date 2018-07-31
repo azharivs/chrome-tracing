@@ -564,6 +564,7 @@ std::move(p_success));
 
 void Agent_StartTracing_ProxyToResponder::Run(
     bool in_success) {
+     TRACE_EVENT0("dorsal", "Agent_StartTracing_ProxyToResponder::Run");
   
   const uint32_t kFlags = mojo::Message::kFlagIsResponse |
       ((is_sync_) ? mojo::Message::kFlagIsSync : 0);

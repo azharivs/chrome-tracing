@@ -126,35 +126,29 @@ void TraceEvent::Initialize(
 // Majid start
 
 
- void (*tp_ptr)(int,char *);
+void (*tp_ptr)(int, char &, const unsigned char *, const char*, const char*, unsigned long long, unsigned long long, int, char const*, const unsigned char*, unsigned long long);
         char *error;
 
         if (!soLoaded){
-            tppHandle = dlopen("/home/majid/Documents/chromium/src/lib.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            tppHandle = dlopen("/home/majid/Music/chromium/src/lib.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
             if (!tppHandle) {
                  fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
             }
             else {
-                printf("--- Majid Rezazadeh: TRACEPOINT REGISTERED: %s\n", name);
                 soLoaded = 1;
             }
         }
 
         dlerror();
 
-        *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z19trpoint_jsontolttngiicPKhPKcS2_yyiPKS2_");
+        *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z19trpoint_jsontolttngiPcS_S_S_yyiS_y");
 
         if ((error = dlerror()) != NULL)  {
              fprintf(stderr, "00: Upon dlsym: %s\n", error);
         }
 
-        //pid_t pid = getpid();
-        //pid_t tid = syscall(SYS_gettid);
-	int tid = 5;
-        //(*tp_ptr)(int tid, int thread_id, char phase, const unsigned char* category_group_enabled, const char* name, const char* scope, unsigned long long id, unsigned long long bind_id, int num_args, const char* const* arg_names);
-        (*tp_ptr)((int) tid, (char *) "Majid::Rezazadeh");
-
-        //std::cout << "....." << (int) tid << ": dlsym\n";
+       
+        (*tp_ptr)((int) thread_id, (char &) phase, (const unsigned char*) category_group_enabled, (const char*) name, (const char*) scope, (unsigned long long) id, (unsigned long long) bind_id, (int) num_args, (char const*) arg_names, (const unsigned char*) arg_types, (unsigned long long) arg_values);
 
 
 // Majid end
