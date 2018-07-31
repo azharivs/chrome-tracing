@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tmfxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../org.eclipse.tracecompass.tmf.analysis.xml.core/src/org/eclipse/tracecompass/tmf/analysis/xml/core/module/xmlDefinition.xsd">
+	
+<callstack id="lttng.ust.chromecallstack.analysis">
+    			
+    <callstackGroup name="ChromeTasks">
+    		<level path="Threads/*" />
+		<thread cpu="cpu" />
+    </callstackGroup>
+
+    <pattern version="1" id="ca.polymtl.chromecallstack">
+        <head>
+            <traceType id="org.eclipse.linuxtools.lttng2.ust.tracetype" />
+            <traceType id="org.eclipse.linuxtools.tmf.core.experiment.generic" />
+            <label value="Chrome Task Analysis" />
+        </head>   
+        
+        <location id="CurrentThread">
+        	<stateAttribute type="constant" value="Threads" />
+		<stateAttribute type="query">
+			<stateAttribute type="constant" value="#CurrentScenario" />
+			<stateAttribute type="constant" value="threadID" />
+		</stateAttribute>
+    	</location>
+    	
+    	
+    	<!-- callstack process="Views/*" thread="Threads/*" callstack="callstack" / -->
+	        
+		<patternHandler>
+		
+			<!-- CONDITIONS -->
+		
+			<!-- Test if the current running thread is equal to the current scenario thread -->
+			<test id="same_kthread">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="context._vtid" forcedType="int"/>
+						<stateValue type="query">
+							<stateAttribute type="constant" value="#CurrentScenario" />
+							<stateAttribute type="constant" value="threadID" />
+						</stateValue>
+					</condition>
+				</if>
+			</test>
+			<test id="same_cthread">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="context._vtid" forcedType="int"/>
+						<stateValue type="query">
+							<stateAttribute type="constant" value="#CurrentScenario" />
+							<stateAttribute type="constant" value="cthreadID" />
+						</stateValue>
+					</condition>
+				</if>
+			</test>
+			<test id="same_cthread_sched">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="prev_tid" forcedType="int"/>
+						<stateValue type="query">
+							<stateAttribute type="constant" value="#CurrentScenario" />
+							<stateAttribute type="constant" value="cthreadID" />
+						</stateValue>
+					</condition>
+				</if>
+			</test>
+			<test id="IsEventRunTaskLoop">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="name" forcedType="string"/>
+						<stateValue type="string" value="MessageLoop::RunTask" />
+					</condition>
+				</if>
+			</test>
+			<test id="IsEventOpenTab">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="name" forcedType="string"/>
+						<stateValue type="string" value="NavigationControllerImpl::LoadURLWithParams" />
+					</condition>
+				</if>
+			</test>
+			<test id="IsEventTakeTask">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="name" forcedType="string"/>
+						<stateValue type="string" value="SequenceManagerImpl::TakeTask" />
+					</condition>
+				</if>
+			</test>
+			<test id="IsEventTaskStarted">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="name" forcedType="string"/>
+						<stateValue type="string" value="TaskQueueImpl::OnTaskStarted" />
+					</condition>
+				</if>
+			</test>
+			<test id="IsEventTaskCompleted">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="name" forcedType="string"/>
+						<stateValue type="string" value="TaskQueueImpl::OnTaskCompleted" />
+					</condition>
+				</if>
+			</test>
+			<!-- ACTIONS -->
+	
+			<!-- Actions and test for time graph view threads -->
+			<action id="entering_request_old">
+				<!-- Initialize current scenario data: component, type of thread, queries and drawing event counts -->
+				<stateChange>
+					<stateAttribute type="constant" value="#CurrentScenario" />
+					<stateAttribute type="constant" value="threadID" />
+					<stateValue type="eventField" value="context._vtid" forcedType="int"/>
+				</stateChange>
+				<stateChange>
+					<stateAttribute type="constant" value="#CurrentScenario" />
+					<stateAttribute type="constant" value="apacheUri" />
+					<stateValue type="eventField" value="uri" />
+				</stateChange>
+			</action>
+
+			
+		
+			<action id="push_uri">
+				<!-- Push the current event to the thread's callstack -->
+				
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="main function" stack="push"/>     
+	            		</stateChange>
+			</action>
+		<action id="push_join">
+				<!-- Push the current event to the thread's callstack -->
+				
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="join threads" stack="push"/>     
+	            		</stateChange>
+			</action>
+		<action id="push_exit">
+				<!-- Push the current event to the thread's callstack -->
+				
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="exit threads" stack="push"/>     
+	            		</stateChange>
+			</action>
+	
+			<action id="pop_uri">
+				<!-- Pop the current event from the callstack -->
+	                    	<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="eventName" stack="pop"/>     
+	            		</stateChange>
+			</action>
+	
+			
+			<action id="push_event_type">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="eventField" value="funcname" stack="push"/>     
+	            		</stateChange>
+			</action>
+	
+			<action id="pop_event_type">
+				<!-- Pop the current event from the callstack -->
+	                    	<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="eventField" value="funcname" stack="pop"/>     
+	            		</stateChange>
+			</action>
+
+
+			<action id="push_event_name">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="eventName" stack="push"/>     
+	            		</stateChange>
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+	           
+			</action>
+	
+			<action id="pop_event_name">
+				<!-- Pop the current event from the callstack -->
+	                    	<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="eventName" stack="pop"/>     
+	            		</stateChange>
+			</action>
+			<action id="pop_all">
+				<!-- Pop the current event from the callstack -->
+	                    	<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="eventName" stack="pop"/>     
+	            		</stateChange>
+			</action>
+			<action id="push_running">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="thread running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_runtask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Running a task" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_newtask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="Taking Task and waiting for start" stack="push"/>   
+	            		</stateChange>
+			</action>
+			<action id="push_thread_start">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="Thread start" stack="push"/>   
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_open_tab">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Opening a new tab" stack="push"/>    
+	            		</stateChange>
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_load_page">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Loading a webpage" stack="push"/>    
+	            		</stateChange>
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_cthreadid">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+					<stateAttribute type="constant" value="#CurrentScenario" />
+					<stateAttribute type="constant" value="cthreadID" />
+					<stateValue type="eventField" value="context._vtid" forcedType="int"/>
+				</stateChange>
+			</action>
+			
+			<action id="entering_request">
+				<stateChange>
+					<stateAttribute type="constant" value="#CurrentScenario" />
+					<stateAttribute type="constant" value="threadID" />
+					<stateValue type="eventField" value="context._vtid" forcedType="int"/>
+				</stateChange>
+			</action>
+	
+			<fsm id="Chrome_analysis" initial="new_task">
+				<state id="new_task">
+
+					<transition event="chrome:Agent_StartTracing_ProxyToResponder_Run" target="in_thread" action="entering_request:push_thread_start:push_cthreadid"/> 
+
+				</state>  
+				<state id="in_thread">
+
+					<transition event="chrome:SequenceManagerImpl_TakeTask" cond="same_cthread" target="in_thread" action="pop_event_name:push_newtask"/> 
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskCompleted" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WebContentsImpl_CreateWithOpener" cond="same_cthread" target="in_thread" action="pop_event_name:push_open_tab"/>
+					<transition event="chrome:WebContentsImpl_CreateWithOpener_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:NavigationControllerImpl_LoadURLWithParams" cond="same_cthread" target="in_thread" action="pop_event_name:push_load_page"/>
+					<transition event="chrome:NavigationControllerImpl_LoadURLWithParams_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:CoordinatorProxy_StopAndFlush" target="end_thread" action="pop_all"/>
+				</state>
+				
+				<final id="end_thread"/>
+			</fsm>
+			
+
+		</patternHandler>
+	</pattern>
+</callstack>
+</tmfxml>
+
