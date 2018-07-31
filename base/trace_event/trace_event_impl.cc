@@ -328,8 +328,6 @@ void TraceEvent::AppendAsJSON(
     std::string* out,
     const ArgumentFilterPredicate& argument_filter_predicate) const {
   int64_t time_int64 = timestamp_.ToInternalValue();
-  int time_nsec = time_int64 % 1000; //sva take the nsec part
-  int64_t time_usec = (int64_t)(double)(time_int64) / 1000; //sva take the usec part
   int process_id;
   int thread_id;
   if ((flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID) &&
@@ -346,8 +344,8 @@ void TraceEvent::AppendAsJSON(
   // Category group checked at category creation time.
   DCHECK(!strchr(name_, '"'));
   StringAppendF(out, "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64
-                     ".%d,\"ph\":\"%c\",\"cat\":\"%s\",\"name\":",
-                process_id, thread_id, time_usec, time_nsec, phase_, category_group_name); //sva make compatible to TC nsec format uuuuuuu.nnn
+                     ",\"ph\":\"%c\",\"cat\":\"%s\",\"name\":",
+                process_id, thread_id, time_int64, phase_, category_group_name);
   EscapeJSONString(name_, true, out);
   *out += ",\"args\":";
 
@@ -389,28 +387,19 @@ void TraceEvent::AppendAsJSON(
 
   if (phase_ == TRACE_EVENT_PHASE_COMPLETE) {
     int64_t duration = duration_.ToInternalValue();
-    int duration_nsec = duration % 1000; //sva take the nsec part
-    int64_t duration_usec = (int64_t)(double)(duration) / 1000; //sva take the usec part
-
     if (duration != -1)
-      StringAppendF(out, ",\"dur\":%" PRId64 ".%d", duration_usec,duration_nsec); //sva TC nsec format
+      StringAppendF(out, ",\"dur\":%" PRId64, duration);
     if (!thread_timestamp_.is_null()) {
       int64_t thread_duration = thread_duration_.ToInternalValue();
-      int thread_duration_nsec = thread_duration % 1000; //sva take the nsec part
-      int64_t thread_duration_usec = (int64_t)(double)(thread_duration) / 1000; //sva take the usec part
-
       if (thread_duration != -1)
-        StringAppendF(out, ",\"tdur\":%" PRId64 ".%d", thread_duration_usec, thread_duration_nsec);
+        StringAppendF(out, ",\"tdur\":%" PRId64, thread_duration);
     }
   }
 
   // Output tts if thread_timestamp is valid.
   if (!thread_timestamp_.is_null()) {
     int64_t thread_time_int64 = thread_timestamp_.ToInternalValue();
-    int thread_time_nsec = thread_time_int64 % 1000; //sva take the nsec part
-    int64_t thread_time_int64_usec = (int64_t)(double)(thread_time_int64) / 1000; //sva take the usec part
-
-    StringAppendF(out, ",\"tts\":%" PRId64 ".%d", thread_time_int64_usec, thread_time_nsec);
+    StringAppendF(out, ",\"tts\":%" PRId64, thread_time_int64);
   }
 
   // Output async tts marker field if flag is set.
