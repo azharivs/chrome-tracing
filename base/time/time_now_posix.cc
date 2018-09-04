@@ -30,6 +30,7 @@ int64_t ConvertTimespecToMicros(const struct timespec& ts) {
   // 2**32 * 1000000 + 2**64 / 1000 < 2**63
   if (sizeof(ts.tv_sec) <= 4 && sizeof(ts.tv_nsec) <= 8) {
     int64_t result = ts.tv_sec;
+<<<<<<< HEAD
     result *= base::Time::kNanosecondsPerSecond;
     result += (ts.tv_nsec);// sva nano sec time resolution / base::Time::kNanosecondsPerMicrosecond);
     return result;
@@ -37,6 +38,15 @@ int64_t ConvertTimespecToMicros(const struct timespec& ts) {
     base::CheckedNumeric<int64_t> result(ts.tv_sec);
     result *= base::Time::kNanosecondsPerSecond;
     result += (ts.tv_nsec);//sva let's try nanosec time resolution / base::Time::kNanosecondsPerMicrosecond);
+=======
+    result *= base::Time::kMicrosecondsPerSecond;
+    result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+    return result;
+  } else {
+    base::CheckedNumeric<int64_t> result(ts.tv_sec);
+    result *= base::Time::kMicrosecondsPerSecond;
+    result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+>>>>>>> 83349fd... Update on first XML view
     return result.ValueOrDie();
   }
 }
@@ -72,8 +82,13 @@ Time TimeNowIgnoringOverride() {
   // since the epoch.  That's enough for nearly 600 centuries.  Adjust from
   // Unix (1970) to Windows (1601) epoch.
   return Time() + TimeDelta::FromMicroseconds(
+<<<<<<< HEAD
                       (tv.tv_sec * Time::kNanosecondsPerSecond + tv.tv_usec * 1000) + //sva 
                       Time::kTimeTToMicrosecondsOffset * 1000);
+=======
+                      (tv.tv_sec * Time::kMicrosecondsPerSecond + tv.tv_usec) +
+                      Time::kTimeTToMicrosecondsOffset);
+>>>>>>> 83349fd... Update on first XML view
 }
 
 Time TimeNowFromSystemTimeIgnoringOverride() {
