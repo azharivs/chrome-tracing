@@ -13,6 +13,7 @@
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 namespace sequence_manager {
@@ -965,7 +966,70 @@ void TaskQueueImpl::SetOnTaskStartedHandler(
 
 void TaskQueueImpl::OnTaskStarted(const TaskQueue::Task& task,
                                   const TaskQueue::TaskTiming& task_timing) {
-     TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted");
+
+     const char* TaskName = TaskQueueImpl::GetName();
+     if (strcmp(TaskName, "control_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_control_tq");
+     }
+     else if (strcmp(TaskName,  "default_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_default_tq");
+     }
+     else if (strcmp(TaskName,  "unthrottled_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_unthrottled_tq");
+     }
+     else if (strcmp(TaskName,  "frame_loading_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_frame_loading_tq");
+     }
+     else if (strcmp(TaskName,  "frame_throttleable_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_frame_throttleable_tq");
+     }
+     else if (strcmp(TaskName,  "frame_deferrable_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_frame_deferrable_tq");
+     }
+     else if (strcmp(TaskName,  "frame_pausable_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_frame_pausable_tq");
+     }
+     else if (strcmp(TaskName,  "frame_unpausable_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_frame_unpausable_tq");
+     }
+     else if (strcmp(TaskName,  "compositor_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_compositor_tq");
+     }
+     else if (strcmp(TaskName,  "idle_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_idle_tq");
+     }
+     else if (strcmp(TaskName,  "test_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_test_tq");
+     }
+     else if (strcmp(TaskName,  "frame_loading_control_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_frame_loading_control_tq");
+     }
+     else if (strcmp(TaskName,  "v8_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_v8_tq");
+     }
+     else if (strcmp(TaskName,  "ipc_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_ipc_tq");
+     }
+     else if (strcmp(TaskName,  "input_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_input_tq");
+     }
+     else if (strcmp(TaskName,  "detached_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_detached_tq");
+     }
+     else if (strcmp(TaskName,  "cleanup_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_cleanup_tq");
+     }
+     else if (strcmp(TaskName,  "other_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_other_tq");
+     }
+     else if (strcmp(TaskName,  "subthread_default_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_subthread_default_tq");
+     }
+     else if (strcmp(TaskName,  "subthread_control_tq") == 0){
+	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_subthread_control_tq");
+     }
+ 
+
   if (!main_thread_only().on_task_started_handler.is_null())
     main_thread_only().on_task_started_handler.Run(task, task_timing);
 }

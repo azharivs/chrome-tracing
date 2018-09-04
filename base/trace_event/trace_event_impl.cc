@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/*sva begin*/
+/*sva begin
 #define TRACEPOINT_DEFINE
 #define TRACEPOINT_PROBE_DYNAMIC_LINKAGE
 #include "chrome-sch-worker-tp.h"
@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-/*sva end*/
+sva end*/
 
 #include "base/trace_event/trace_event_impl.h"
 
@@ -29,8 +29,8 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_log.h"
 
-static void * tppHandle = NULL;//sva
-static int soLoaded = 0;//sva
+//static void * tppHandle = NULL;//sva
+//static int soLoaded = 0;//sva
 
 namespace base {
 namespace trace_event {
@@ -122,7 +122,7 @@ void TraceEvent::Initialize(
   flags_ = flags;
   bind_id_ = bind_id;
 
-
+/*sva
 // Majid start
 
 
@@ -152,6 +152,7 @@ void (*tp_ptr)(int, char &, const unsigned char *, const char*, const char*, uns
 
 
 // Majid end
+sva */
 
   // Clamp num_args since it may have been set by a third_party library.
   num_args = (num_args > kTraceMaxNumArgs) ? kTraceMaxNumArgs : num_args;
@@ -322,6 +323,15 @@ void TraceEvent::AppendAsJSON(
     std::string* out,
     const ArgumentFilterPredicate& argument_filter_predicate) const {
   int64_t time_int64 = timestamp_.ToInternalValue();
+  int time_nsec; //sva: nsec part of timestamp
+  int64_t time_usec; //sva: usec part of timestamp
+  /* * sva IMPORTANT NOTE:
+  * We will assume all times are in nano sec. However some will always be in usec. 
+  * To correct this problem a python script is written that adjust the usec by *1000
+  * This python script MUST be run on the resulting json trace file.
+  * sva */
+  time_nsec = time_int64 % 1000; //sva take the nsec part
+  time_usec = (int64_t)(double)(time_int64) / 1000; //sva take the usec part
   int process_id;
   int thread_id;
   if ((flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID) &&
@@ -338,8 +348,8 @@ void TraceEvent::AppendAsJSON(
   // Category group checked at category creation time.
   DCHECK(!strchr(name_, '"'));
   StringAppendF(out, "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64
-                     ",\"ph\":\"%c\",\"cat\":\"%s\",\"name\":",
-                process_id, thread_id, time_int64, phase_, category_group_name);
+                     ".%d,\"ph\":\"%c\",\"cat\":\"%s\",\"name\":",
+                process_id, thread_id, time_usec, time_nsec, phase_, category_group_name); //sva make compatible to TC nsec format uuuuuuu.nnn
   EscapeJSONString(name_, true, out);
   *out += ",\"args\":";
 
@@ -381,19 +391,28 @@ void TraceEvent::AppendAsJSON(
 
   if (phase_ == TRACE_EVENT_PHASE_COMPLETE) {
     int64_t duration = duration_.ToInternalValue();
+    int duration_nsec = duration % 1000; //sva take the nsec part (always in nsec so will not check hopefully ok)
+    int64_t duration_usec = (int64_t)(double)(duration) / 1000; //sva take the usec part
+
     if (duration != -1)
-      StringAppendF(out, ",\"dur\":%" PRId64, duration);
+      StringAppendF(out, ",\"dur\":%" PRId64 ".%d", duration_usec,duration_nsec); //sva TC nsec format
     if (!thread_timestamp_.is_null()) {
       int64_t thread_duration = thread_duration_.ToInternalValue();
+      int thread_duration_nsec = thread_duration % 1000; //sva take the nsec part (always in nsec so will not check hopefully ok)
+      int64_t thread_duration_usec = (int64_t)(double)(thread_duration) / 1000; //sva take the usec part
+
       if (thread_duration != -1)
-        StringAppendF(out, ",\"tdur\":%" PRId64, thread_duration);
+        StringAppendF(out, ",\"tdur\":%" PRId64 ".%d", thread_duration_usec, thread_duration_nsec);
     }
   }
 
   // Output tts if thread_timestamp is valid.
   if (!thread_timestamp_.is_null()) {
     int64_t thread_time_int64 = thread_timestamp_.ToInternalValue();
-    StringAppendF(out, ",\"tts\":%" PRId64, thread_time_int64);
+    int thread_time_nsec = thread_time_int64 % 1000; //sva take the nsec part (always in nsec so will not check hopefully ok)
+    int64_t thread_time_int64_usec = (int64_t)(double)(thread_time_int64) / 1000; //sva take the usec part
+
+    StringAppendF(out, ",\"tts\":%" PRId64 ".%d", thread_time_int64_usec, thread_time_nsec);
   }
 
   // Output async tts marker field if flag is set.
