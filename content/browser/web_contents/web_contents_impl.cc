@@ -572,11 +572,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI)) {
-    display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(
-        this, base::BindRepeating(&WebContentsImpl::NotifyViewportFitChanged,
-                                  base::Unretained(this)));
-  }
+  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI))
+    display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
 #endif
 
   registry_.AddInterface(base::BindRepeating(
@@ -684,6 +681,9 @@ WebContentsImpl::~WebContentsImpl() {
   for (auto& observer : observers_)
     observer.WebContentsDestroyed();
 
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->WebContentsDestroyed();
+
   for (auto& observer : observers_)
     observer.ResetWebContents();
 
@@ -695,34 +695,51 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
     RenderFrameHostImpl* opener_rfh) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateWithOpener");
   FrameTreeNode* opener = nullptr;
-  if (opener_rfh)
+  if (opener_rfh){
+    TRACE_EVENT0("dorsal", "WebContentsImpl::opener_rfh->frame_tree_node");
     opener = opener_rfh->frame_tree_node();
+    TRACE_EVENT0("dorsal", "WebContentsImpl::opener_rfh->frame_tree_node_END");
+  }
   std::unique_ptr<WebContentsImpl> new_contents(
       new WebContentsImpl(params.browser_context));
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_contents->SetOpenerForNewContents");
   new_contents->SetOpenerForNewContents(opener, params.opener_suppressed);
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_contents->SetOpenerForNewContents_END");
 
   // If the opener is sandboxed, a new popup must inherit the opener's sandbox
   // flags, and these flags take effect immediately.  An exception is if the
   // opener's sandbox flags lack the PropagatesToAuxiliaryBrowsingContexts
   // bit (which is controlled by the "allow-popups-to-escape-sandbox" token).
   // See https://html.spec.whatwg.org/#attr-iframe-sandbox.
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_contents->GetFrameTree()->root");
   FrameTreeNode* new_root = new_contents->GetFrameTree()->root();
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_contents->GetFrameTree()->root_END");
   if (opener) {
+    TRACE_EVENT0("dorsal", "WebContentsImpl::opener_rfh->active_sandbox_flags");
     blink::WebSandboxFlags opener_flags = opener_rfh->active_sandbox_flags();
+    TRACE_EVENT0("dorsal", "WebContentsImpl::opener_rfh->active_sandbox_flags_END");
     const blink::WebSandboxFlags inherit_flag =
         blink::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
     if ((opener_flags & inherit_flag) == inherit_flag) {
       // TODO(iclelland): Transfer correct container policy from opener as well.
       // https://crbug.com/774620
+      TRACE_EVENT0("dorsal", "WebContentsImpl::new_root->SetPendingFramePolicy");
       new_root->SetPendingFramePolicy({opener_flags, {}});
+      TRACE_EVENT0("dorsal", "WebContentsImpl::new_root->SetPendingFramePolicy_END");
     }
   }
 
   // Apply starting sandbox flags.
+  TRACE_EVENT0("dorsal", "WebContentsImpl::pending_frame_policy");
   blink::FramePolicy frame_policy(new_root->pending_frame_policy());
+  TRACE_EVENT0("dorsal", "WebContentsImpl::pending_frame_policy_END");
   frame_policy.sandbox_flags |= params.starting_sandbox_flags;
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_root->SetPendingFramePolicy");
   new_root->SetPendingFramePolicy(frame_policy);
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_root->SetPendingFramePolicy_END");
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_root->CommitPendingFramePolicy");
   new_root->CommitPendingFramePolicy();
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_root->CommitPendingFramePolicy_END");
 
   // This may be true even when opener is null, such as when opening blocked
   // popups.
@@ -732,11 +749,15 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
   if (params.guest_delegate) {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
+    TRACE_EVENT0("dorsal", "WebContentsImpl::BrowserPluginGuest::Create");
     BrowserPluginGuest::Create(new_contents.get(), params.guest_delegate);
+    TRACE_EVENT0("dorsal", "WebContentsImpl::BrowserPluginGuest::Create_END");
   }
 
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_contents->Init");
   new_contents->Init(params);
-  TRACE_EVENT0("dorsal", "WebContentsImpl::CreateWithOpener_END");
+  TRACE_EVENT0("dorsal", "WebContentsImpl::new_contents->Init_END");
+  TRACE_EVENT0("browser", "WebContentsImpl::CreateWithOpener_END");
   return new_contents;
 }
 
@@ -866,7 +887,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                         OnUnregisterProtocolHandler)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdatePageImportanceSignals,
                         OnUpdatePageImportanceSignals)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceCreated,
@@ -1122,10 +1142,10 @@ void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
   // them into a single tree and call |callback| with that result, then
   // delete |combiner|.
   FrameTreeNode* root_node = frame_tree_.root();
-  AXTreeSnapshotCombiner* combiner =
-      new AXTreeSnapshotCombiner(std::move(callback));
+  auto combiner =
+      base::MakeRefCounted<AXTreeSnapshotCombiner>(std::move(callback));
 
-  RecursiveRequestAXTreeSnapshotOnFrame(root_node, combiner, ax_mode);
+  RecursiveRequestAXTreeSnapshotOnFrame(root_node, combiner.get(), ax_mode);
 }
 
 void WebContentsImpl::RecursiveRequestAXTreeSnapshotOnFrame(
@@ -1905,11 +1925,16 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
           params.main_frame_widget_routing_id != MSG_ROUTING_NONE));
 
   scoped_refptr<SiteInstance> site_instance = params.site_instance;
-  if (!site_instance)
+  if (!site_instance){
+    TRACE_EVENT0("dorsal", "SiteInstance::Create");
     site_instance = SiteInstance::Create(params.browser_context);
+    TRACE_EVENT0("dorsal", "SiteInstance::Create_END");
+  }
   if (params.desired_renderer_state == CreateParams::kNoRendererProcess) {
+    TRACE_EVENT0("dorsal", "PreventAssociationWithSpareProcess");
     static_cast<SiteInstanceImpl*>(site_instance.get())
         ->PreventAssociationWithSpareProcess();
+    TRACE_EVENT0("dorsal", "PreventAssociationWithSpareProcess_END");
   }
 
   // A main RenderFrameHost always has a RenderWidgetHost, since it is always a
@@ -1920,31 +1945,43 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   int32_t view_routing_id = params.routing_id;
   int32_t main_frame_widget_routing_id = params.main_frame_widget_routing_id;
   if (main_frame_widget_routing_id == MSG_ROUTING_NONE) {
+    TRACE_EVENT0("dorsal", "site_instance::GetProcess::GetNextRoutingID");
     view_routing_id = site_instance->GetProcess()->GetNextRoutingID();
+    TRACE_EVENT0("dorsal", "site_instance::GetProcess::GetNextRoutingID_END");
+    TRACE_EVENT0("dorsal", "site_instance::GetProcess::GetNextRoutingID");
     main_frame_widget_routing_id =
         site_instance->GetProcess()->GetNextRoutingID();
+    TRACE_EVENT0("dorsal", "site_instance::GetProcess::GetNextRoutingID_END");
   }
 
   DCHECK_NE(view_routing_id, main_frame_widget_routing_id);
-
+  TRACE_EVENT0("dorsal", "GetRenderManager::Init");
   GetRenderManager()->Init(
       site_instance.get(), view_routing_id, params.main_frame_routing_id,
       main_frame_widget_routing_id, params.renderer_initiated_creation);
+  TRACE_EVENT0("dorsal", "GetRenderManager::Init_END");
 
   // blink::FrameTree::setName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.
   std::string unique_name;
+  TRACE_EVENT0("dorsal", "frame_tree_root::SetFrameName");
   frame_tree_.root()->SetFrameName(params.main_frame_name, unique_name);
-
+  TRACE_EVENT0("dorsal", "frame_tree_root::SetFrameName_END");
+  TRACE_EVENT0("dorsal", "GetContentClient::browser::GetWebContentsViewDelegate");
   WebContentsViewDelegate* delegate =
-      GetContentClient()->browser()->GetWebContentsViewDelegate(this);
+  GetContentClient()->browser()->GetWebContentsViewDelegate(this);
+  TRACE_EVENT0("dorsal", "GetContentClient::browser::GetWebContentsViewDelegate_END");
 
   if (GuestMode::IsCrossProcessFrameGuest(this)) {
+  TRACE_EVENT0("dorsal", "view_reset::WebContentsViewChildFrame");
     view_.reset(new WebContentsViewChildFrame(
         this, delegate, &render_view_host_delegate_view_));
+  TRACE_EVENT0("dorsal", "view_reset::WebContentsViewChildFrame_END");
   } else {
+  TRACE_EVENT0("dorsal", "view_reset::CreateWebContentsView");
     view_.reset(CreateWebContentsView(this, delegate,
                                       &render_view_host_delegate_view_));
+  TRACE_EVENT0("dorsal", "view_reset::CreateWebContentsView_END");
     if (browser_plugin_guest_) {
       view_ = std::make_unique<WebContentsViewGuest>(
           this, browser_plugin_guest_.get(), std::move(view_),
@@ -1955,16 +1992,19 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   CHECK(view_.get());
 
   gfx::Size initial_size = params.initial_size;
+  TRACE_EVENT0("dorsal", "view::CreateView");
   view_->CreateView(initial_size, params.context);
+  TRACE_EVENT0("dorsal", "view::CreateView_END");
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   plugin_content_origin_whitelist_.reset(
       new PluginContentOriginWhitelist(this));
 #endif
-
+  TRACE_EVENT0("dorsal", "NotificationRegistrar::Add");
   registrar_.Add(this,
                  NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllBrowserContextsAndSources());
+  TRACE_EVENT0("dorsal", "NotificationRegistrar::Add_END");
 
   screen_orientation_provider_.reset(new ScreenOrientationProvider(this));
 
@@ -1976,8 +2016,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   // BrowserPluginGuest::Init needs to be called after this WebContents has
   // a RenderWidgetHostViewGuest. That is, |view_->CreateView| above.
-  if (browser_plugin_guest_)
+  if (browser_plugin_guest_){
+  TRACE_EVENT0("dorsal", "browser_plugin_guest::Init");
     browser_plugin_guest_->Init();
+  TRACE_EVENT0("dorsal", "browser_plugin_guest::Init_END");
+  }
 
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
@@ -1986,16 +2029,22 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // corresponding RenderView and main RenderFrame have already been created.
   // Ensure observers are notified about this.
   if (params.renderer_initiated_creation) {
+  TRACE_EVENT0("dorsal", "GetRenderViewHost::GetWidget::set_renderer_initialized");
     GetRenderViewHost()->GetWidget()->set_renderer_initialized(true);
+  TRACE_EVENT0("dorsal", "GetRenderViewHost::DispatchRenderViewCreated");
     GetRenderViewHost()->DispatchRenderViewCreated();
+  TRACE_EVENT0("dorsal", "GetRenderManager::current_frame_host::SetRenderFrameCreated");
     GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
+  TRACE_EVENT0("dorsal", "GetRenderManager::current_frame_host::SetRenderFrameCreated_END");
   }
 
   // Create the renderer process in advance if requested.
   if (params.desired_renderer_state ==
       CreateParams::kInitializeAndWarmupRendererProcess) {
     if (!GetRenderManager()->current_frame_host()->IsRenderFrameLive()) {
+      TRACE_EVENT0("dorsal", "GetRenderManager::InitRenderView");
       GetRenderManager()->InitRenderView(GetRenderViewHost(), nullptr);
+      TRACE_EVENT0("dorsal", "GetRenderManager::InitRenderView_END");
     }
   }
 
@@ -2003,8 +2052,10 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // main RenderFrameHost. It must be done here for main frames, since the
   // NotifySwappedFromRenderManager expects view_ to already be created and that
   // happens after RenderFrameHostManager::Init.
+  TRACE_EVENT0("dorsal", "NotifySwappedFromRenderManager");
   NotifySwappedFromRenderManager(
       nullptr, GetRenderManager()->current_frame_host(), true);
+  TRACE_EVENT0("dorsal", "NotifySwappedFromRenderManager_END");
 }
 
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
@@ -2331,6 +2382,9 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
     observer.DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(),
                                            will_cause_resize);
   }
+
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->DidExitFullscreen();
 }
 
 void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
@@ -2395,6 +2449,9 @@ void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
 
     for (auto& observer : observers_)
       observer.DidAcquireFullscreen(max_depth_rfh);
+
+    if (display_cutout_host_impl_)
+      display_cutout_host_impl_->DidAcquireFullscreen(max_depth_rfh);
   } else if (fullscreen_frame_tree_nodes_.size() == 0) {
     current_fullscreen_frame_tree_node_id_ =
         RenderFrameHost::kNoFrameTreeNodeId;
@@ -2678,20 +2735,17 @@ void WebContentsImpl::CreateNewWindow(
                                   params.target_url, raw_new_contents);
   }
 
-  if (opener) {
-    for (auto& observer : observers_) {
-      observer.DidOpenRequestedURL(raw_new_contents, opener, params.target_url,
-                                   params.referrer, params.disposition,
-                                   ui::PAGE_TRANSITION_LINK,
-                                   false,  // started_from_context_menu
-                                   true);  // renderer_initiated
-    }
+  for (auto& observer : observers_) {
+    observer.DidOpenRequestedURL(raw_new_contents, opener, params.target_url,
+                                 params.referrer, params.disposition,
+                                 ui::PAGE_TRANSITION_LINK,
+                                 false,  // started_from_context_menu
+                                 true);  // renderer_initiated
   }
 
   // Any new WebContents opened while this WebContents is in fullscreen can be
   // used to confuse the user, so drop fullscreen.
-  if (IsFullscreenForCurrentTab())
-    ExitFullscreen(true);
+  ForSecurityDropFullscreen();
 
   if (params.opener_suppressed) {
     // When the opener is suppressed, the original renderer cannot access the
@@ -3151,9 +3205,10 @@ void WebContentsImpl::SelectRange(const gfx::Point& base,
 
 #if defined(OS_MACOSX)
 void WebContentsImpl::DidChangeTextSelection(const base::string16& text,
-                                             const gfx::Range& range) {
+                                             const gfx::Range& range,
+                                             size_t offset) {
   for (auto& observer : observers_)
-    observer.DidChangeTextSelection(text, range);
+    observer.DidChangeTextSelection(text, range, offset);
 }
 #endif
 
@@ -3240,10 +3295,10 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
 
   if (new_contents && source_render_frame_host && new_contents != this) {
     for (auto& observer : observers_) {
-      observer.DidOpenRequestedURL(new_contents, source_render_frame_host,
-                                   params.url, params.referrer,
-                                   params.disposition, params.transition,
-                                   params.started_from_context_menu, false);
+      observer.DidOpenRequestedURL(
+          new_contents, source_render_frame_host, params.url, params.referrer,
+          params.disposition, params.transition,
+          params.started_from_context_menu, params.is_renderer_initiated);
     }
   }
 
@@ -4027,6 +4082,9 @@ void WebContentsImpl::DidStartNavigation(NavigationHandle* navigation_handle) {
                "navigation_handle", navigation_handle);
   for (auto& observer : observers_)
     observer.DidStartNavigation(navigation_handle);
+
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->DidStartNavigation(navigation_handle);
 }
 
 void WebContentsImpl::DidRedirectNavigation(
@@ -4080,9 +4138,13 @@ void WebContentsImpl::ReadyToCommitNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
-  controller_.ssl_manager()->DidStartResourceResponse(
-      navigation_handle->GetURL(),
-      net::IsCertStatusError(navigation_handle->GetSSLInfo().cert_status));
+  // SSLInfo is not needed on subframe navigations since the main-frame
+  // certificate is the only one that can be inspected (using the info
+  // bubble) without refreshing the page with DevTools open.
+  if (navigation_handle->IsInMainFrame())
+    controller_.ssl_manager()->DidStartResourceResponse(
+        navigation_handle->GetURL(),
+        net::IsCertStatusError(navigation_handle->GetSSLInfo().cert_status));
 
   SetNotWaitingForResponse();
 }
@@ -4093,6 +4155,9 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
   for (auto& observer : observers_)
     observer.DidFinishNavigation(navigation_handle);
+
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->DidFinishNavigation(navigation_handle);
 
   if (navigation_handle->HasCommitted()) {
     BrowserAccessibilityManager* manager =
@@ -4350,8 +4415,7 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
 
   // Any new WebContents opened while this WebContents is in fullscreen can be
   // used to confuse the user, so drop fullscreen.
-  if (IsFullscreenForCurrentTab())
-    ExitFullscreen(true);
+  ForSecurityDropFullscreen();
 
   // We intentionally don't share the SiteInstance with the original frame so
   // that view source has a consistent process model and always ends up in a new
@@ -4411,9 +4475,11 @@ void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
 
 void WebContentsImpl::ResourceLoadComplete(
     RenderFrameHost* render_frame_host,
+    const GlobalRequestID& request_id,
     mojom::ResourceLoadInfoPtr resource_load_info) {
   for (auto& observer : observers_) {
-    observer.ResourceLoadComplete(render_frame_host, *resource_load_info);
+    observer.ResourceLoadComplete(render_frame_host, request_id,
+                                  *resource_load_info);
   }
 }
 
@@ -4571,22 +4637,6 @@ void WebContentsImpl::OnUpdatePageImportanceSignals(
   // TODO(nick, kouhei): Fix this for oopifs; currently all frames' state gets
   // written to this one field.
   page_importance_signals_ = signals;
-}
-
-void WebContentsImpl::OnFindReply(RenderFrameHostImpl* source,
-                                  int request_id,
-                                  int number_of_matches,
-                                  const gfx::Rect& selection_rect,
-                                  int active_match_ordinal,
-                                  bool final_update) {
-  if (active_match_ordinal > 0)
-    SetFocusedFrame(source->frame_tree_node(), source->GetSiteInstance());
-
-  // Forward the find reply to the FindRequestManager, along with the
-  // RenderFrameHost associated with the frame that the reply came from.
-  GetOrCreateFindRequestManager()->OnFindReply(
-      source, request_id, number_of_matches, selection_rect,
-      active_match_ordinal, final_update);
 }
 
 #if defined(OS_ANDROID)
@@ -4897,6 +4947,11 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
 
   view_->RenderViewHostChanged(old_host, new_host);
 
+  // If this is an inner WebContents that has swapped views, we need to reattach
+  // it to its outer WebContents.
+  if (node_.outer_web_contents())
+    ReattachToOuterWebContentsFrame();
+
   // Ensure that the associated embedder gets cleared after a RenderViewHost
   // gets swapped, so we don't reuse the same embedder next time a
   // RenderViewHost is attached to this WebContents.
@@ -4992,6 +5047,9 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
     observer.RenderFrameCreated(render_frame_host);
   UpdateAccessibilityModeOnFrame(render_frame_host);
 
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->RenderFrameCreated(render_frame_host);
+
   if (!render_frame_host->IsRenderFrameLive() || render_frame_host->GetParent())
     return;
 
@@ -5012,6 +5070,9 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   pepper_playback_observer_->RenderFrameDeleted(render_frame_host);
 #endif
 
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->RenderFrameDeleted(render_frame_host);
+
   // Remove any fullscreen state that the frame has stored.
   FullscreenStateChanged(render_frame_host, false /* is_fullscreen */);
 }
@@ -5021,6 +5082,12 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
   // If a renderer fires off a second command to show a context menu before the
   // first context menu is closed, just ignore it. https://crbug.com/707534
   if (showing_context_menu_)
+    return;
+
+  // If the WebContents is not visible, don't show the context menu. This can
+  // happen if the renderer takes a while to return the right-click event back
+  // to the browser process and in the meantime the user switches tabs.
+  if (GetVisibility() != Visibility::VISIBLE)
     return;
 
   ContextMenuParams context_menu_params(params);
@@ -5049,8 +5116,7 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
 
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
-  if (IsFullscreenForCurrentTab())
-    ExitFullscreen(true);
+  ForSecurityDropFullscreen();
 
   auto callback =
       base::BindOnce(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
@@ -5119,8 +5185,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
-  if (IsFullscreenForCurrentTab())
-    ExitFullscreen(true);
+  ForSecurityDropFullscreen();
 
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
@@ -5702,6 +5767,15 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
   }
 }
 
+void WebContentsImpl::ForSecurityDropFullscreen() {
+  WebContentsImpl* web_contents = this;
+  while (web_contents) {
+    if (web_contents->IsFullscreenForCurrentTab())
+      web_contents->ExitFullscreen(true);
+    web_contents = web_contents->GetOuterWebContents();
+  }
+}
+
 void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
   // Only change focus if we are not currently focused.
   WebContentsImpl* old_contents = GetFocusedWebContents();
@@ -5769,8 +5843,7 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
 void WebContentsImpl::DidCallFocus() {
   // Any explicit focusing of another window while this WebContents is in
   // fullscreen can be used to confuse the user, so drop fullscreen.
-  if (IsFullscreenForCurrentTab())
-    ExitFullscreen(true);
+  ForSecurityDropFullscreen();
 }
 
 RenderFrameHost* WebContentsImpl::GetFocusedFrameIncludingInnerWebContents() {
@@ -6548,11 +6621,6 @@ void WebContentsImpl::FocusedNodeTouched(bool editable) {
     return;
   view->FocusedNodeTouched(editable);
 #endif
-}
-
-void WebContentsImpl::DidReceiveCompositorFrame() {
-  for (auto& observer : observers_)
-    observer.DidReceiveCompositorFrame();
 }
 
 void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {

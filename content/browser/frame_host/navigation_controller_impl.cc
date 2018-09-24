@@ -86,6 +86,7 @@
 #include "url/url_constants.h"
 
 namespace content {
+
 namespace {
 
 // Invoked when entries have been pruned, or removed. For example, if the
@@ -737,10 +738,14 @@ void NavigationControllerImpl::LoadURL(
   LoadURLWithParams(params);
 }
 
+
+//bool NavigationControllerImpl::loadpage(){return true;}
+
 void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   TRACE_EVENT1("browser,navigation",
                "NavigationControllerImpl::LoadURLWithParams",
                "url", params.url.possibly_invalid_spec());
+  //NavigationControllerImpl::loadpage();
   if (HandleDebugURL(params.url, params.transition_type)) {
     // If Telemetry is running, allow the URL load to proceed as if it's
     // unhandled, otherwise Telemetry can't tell if Navigation completed.
@@ -1026,6 +1031,10 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
       return NAVIGATION_TYPE_NAV_IGNORE;
 
     // This is history.replaceState() or history.reload().
+    // TODO(nasko): With error page isolation, reloading an existing session
+    // history entry can result in change of SiteInstance. Check for such a case
+    // here and classify it as NEW_PAGE, as such navigations should be treated
+    // as new with replacement.
     return NAVIGATION_TYPE_EXISTING_PAGE;
   }
 
