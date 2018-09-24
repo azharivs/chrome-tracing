@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/*sva begin*/
+#define TRACEPOINT_DEFINE
+#define TRACEPOINT_PROBE_DYNAMIC_LINKAGE
+#include "chrome-sch-worker-tp_pendingtasks.h"
+//#include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+/*sva end*/
+
 #include "base/task/sequence_manager/task_queue_impl.h"
 
 #include <memory>
@@ -14,6 +24,9 @@
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "base/trace_event/trace_event.h"
+
+static void * tppHandle = NULL;//sva
+static int soLoaded = 0;//sva
 
 namespace base {
 namespace sequence_manager {
@@ -378,12 +391,52 @@ bool TaskQueueImpl::IsEmpty() const {
 
 size_t TaskQueueImpl::GetNumberOfPendingTasks() const {
   size_t task_count = 0;
+  size_t task_count_delayed_work_queue = 0;
+  size_t task_count_delayed_incoming_queue = 0;
+  size_t task_count_immediate_work_queue = 0;
+  size_t task_count_immediate_incoming_queue = 0;
   task_count += main_thread_only().delayed_work_queue->Size();
+  task_count_delayed_work_queue = main_thread_only().delayed_work_queue->Size();
   task_count += main_thread_only().delayed_incoming_queue.size();
+  task_count_delayed_incoming_queue = main_thread_only().delayed_incoming_queue.size();
   task_count += main_thread_only().immediate_work_queue->Size();
+  task_count_immediate_work_queue = main_thread_only().immediate_work_queue->Size();
 
   AutoLock lock(immediate_incoming_queue_lock_);
   task_count += immediate_incoming_queue().size();
+  task_count_immediate_incoming_queue = immediate_incoming_queue().size();
+
+// Majid start
+
+
+void (*tp_ptr)(int, int, int, int);
+        char *error;
+
+        if (!soLoaded){
+            tppHandle = dlopen("/home/majid/Documents/chromium/src/lib3.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z12pendingtasksiiii");
+
+        if ((error = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error);
+        }
+
+       
+        (*tp_ptr)((int) task_count_delayed_work_queue, (int) task_count_delayed_incoming_queue, (int) task_count_immediate_work_queue, (int) task_count_immediate_incoming_queue);
+
+
+// Majid end
+
+	printf("\n\n\n*********************************  GetNumberOfPendingTasks:  *********************************\nTask_count_delayed_work_queue: %zu\nTask_count_delayed_incoming_queue: %zu\nTask_count_immediate_work_queue: %zu\nTask_count_immediate_incoming_queue: %zu\n\n\n", task_count_delayed_work_queue, task_count_delayed_incoming_queue, task_count_immediate_work_queue, task_count_immediate_incoming_queue);
   return task_count;
 }
 
@@ -966,7 +1019,9 @@ void TaskQueueImpl::SetOnTaskStartedHandler(
 
 void TaskQueueImpl::OnTaskStarted(const TaskQueue::Task& task,
                                   const TaskQueue::TaskTiming& task_timing) {
-
+	printf("************************************TaskStarted, type is: %d \nName is: %s \nFname: %s \nLine number: %d \nProgramcounter: %p\n", task.task_type(), (task).posted_from.file_name(), (task).posted_from.function_name(), (task).posted_from.line_number(), (task).posted_from.program_counter());
+  printf("------------------------------OnTaskStarted---------------------------------\n\n");
+	TaskQueueImpl::GetNumberOfPendingTasks();
      const char* TaskName = TaskQueueImpl::GetName();
      if (strcmp(TaskName, "control_tq") == 0){
 	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_control_tq");
@@ -1044,6 +1099,8 @@ void TaskQueueImpl::OnTaskCompleted(const TaskQueue::Task& task,
      TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskCompleted");
   if (!main_thread_only().on_task_completed_handler.is_null())
     main_thread_only().on_task_completed_handler.Run(task, task_timing);
+  printf("------------------------------OnTaskCompleted---------------------------------\n\n");
+	TaskQueueImpl::GetNumberOfPendingTasks();
 }
 
 bool TaskQueueImpl::RequiresTaskTiming() const {
