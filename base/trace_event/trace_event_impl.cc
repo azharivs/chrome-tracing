@@ -35,6 +35,9 @@ static int soLoaded = 0;//sva
 namespace base {
 namespace trace_event {
 
+int th[50];
+int insertion = 0;
+
 namespace {
 
 size_t GetAllocLength(const char* str) { return str ? strlen(str) + 1 : 0; }
@@ -151,7 +154,23 @@ void (*tp_ptr)(int, char &, const unsigned char *, const char*, const char*, uns
 
 
 // Majid end
-
+/*
+int found = 0;
+for (int counter = 0 ; counter < 50 ; counter++)
+{
+    if (th[counter] == thread_id) 
+    {
+	   found = 1;
+           break;
+    }
+}
+if (found == 0) {
+        TRACE_EVENT0("dorsal", "StartofThread");
+	th[insertion] = thread_id ;
+	insertion += 1;
+	}
+found = 0;
+*/
   // Clamp num_args since it may have been set by a third_party library.
   num_args = (num_args > kTraceMaxNumArgs) ? kTraceMaxNumArgs : num_args;
   int i = 0;

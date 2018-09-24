@@ -15,6 +15,9 @@
             <label value="Chrome Task Analysis" />
         </head>   
         
+        <definedValue name="first_task" value="0" />
+
+
         <location id="CurrentThread">
         	<stateAttribute type="constant" value="Threads" />
 		<stateAttribute type="query">
@@ -53,17 +56,16 @@
 					</condition>
 				</if>
 			</test>
-			<test id="same_cthread_sched">
+	<!--		<test id="first_task">
 				<if>
 					<condition>
-						<stateValue type="eventField" value="prev_tid" forcedType="int"/>
-						<stateValue type="query">
-							<stateAttribute type="constant" value="#CurrentScenario" />
-							<stateAttribute type="constant" value="cthreadID" />
-						</stateValue>
+
+						<definedValue name="first_task"/>
+						<stateValue type="int" value="0" />
+
 					</condition>
 				</if>
-			</test>
+			</test>  -->
 			<test id="IsEventRunTaskLoop">
 				<if>
 					<condition>
@@ -106,6 +108,30 @@
 			</test>
 			<!-- ACTIONS -->
 	
+			<action id="ensure_thread_present">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+					<if>
+						<condition>
+						<stateValue type="query">
+							<stateAttribute type="constant" value="Threads" />
+							<stateAttribute type="eventField" value="context._vtid" />
+	                    				<stateAttribute type="constant" value="CallStack" /> 
+						</stateValue>
+						<stateValue type="null"/>
+						</condition>		
+					</if>
+					
+					<then>
+	                    			<stateAttribute type="constant" value="Threads" />
+						<stateAttribute type="eventField" value="context._vtid" />
+	                    			<stateAttribute type="constant" value="CallStack" />  
+						<stateValue type="string" value="StartofThread" stack="push"/>    
+					</then>  
+	            		</stateChange>
+			</action>
+
+
 			<!-- Actions and test for time graph view threads -->
 			<action id="entering_request_old">
 				<!-- Initialize current scenario data: component, type of thread, queries and drawing event counts -->
@@ -202,6 +228,11 @@
 	                    		<stateAttribute type="constant" value="CallStack" />
 					<stateValue type="eventName" stack="pop"/>     
 	            		</stateChange>
+			<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="eventName" stack="pop"/>     
+	            		</stateChange>
 			</action>
 			<action id="pop_all">
 				<!-- Pop the current event from the callstack -->
@@ -247,13 +278,184 @@
 					<stateValue type="string" value="Thread start" stack="push"/>   
 	            		</stateChange>
 			</action>
-			<action id="push_TaskStarted">
+			<action id="push_TaskStarted_control_tq">
 				<!-- Push the current event to the thread's callstack -->
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
 	                    		<stateAttribute type="constant" value="CallStack" />
 	<!--				<stateValue type="eventName" stack="push"/>    -->
-					<stateValue type="string" value="Task running" stack="push"/>    
+					<stateValue type="string" value="Task control_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_default_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task default_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_unthrottled_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task unthrottled_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_frame_loading_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task frame_loading_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_frame_throttleable_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task frame_throttleable_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_frame_deferrable_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task frame_deferrable_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_frame_pausable_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task frame_pausable_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_frame_unpausable_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task frame_unpausable_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_compositor_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task compositor_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_idle_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task idle_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_test_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task test_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_frame_loading_control_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task frame_loading_control_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_v8_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task v8_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_ipc_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task ipc_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_input_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task input_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_detached_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task detached_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_cleanup_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task cleanup_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_other_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task other_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_subthread_default_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task subthread_default_tq running" stack="push"/>    
+	            		</stateChange>
+			</action>
+			<action id="push_TaskStarted_subthread_control_tq">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Task subthread_control_tq running" stack="push"/>    
 	            		</stateChange>
 			</action>
 			<action id="push_open_tab">
@@ -261,8 +463,160 @@
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
 	                    		<stateAttribute type="constant" value="CallStack" />
-	<!--				<stateValue type="eventName" stack="push"/>    -->
-					<stateValue type="string" value="Opening a new tab" stack="push"/>    
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="Opening a new tab" stack="push"/>   
+	            		</stateChange>
+			</action>
+			<action id="push_OnKeyEvent">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="OnKeyEvent" stack="push"/>   
+	            		</stateChange>
+			</action>
+			<action id="push_OnMouseEvent">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="OnMouseEvent" stack="push"/>   
+	            		</stateChange>
+			</action>
+			<action id="push_OnScrollEvent">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="OnScrollEvent" stack="push"/>   
+	            		</stateChange>
+			</action>
+			<action id="push_OnTouchEvent">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="OnTouchEvent" stack="push"/>   
+	            		</stateChange>
+			</action>
+			<action id="push_OnGestureEvent">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="OnGestureEvent" stack="push"/>   
+	            		</stateChange>
+			</action>
+			<action id="push_LayerTreeHostImpl_BeginCommit">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<!--<stateValue type="eventName" stack="push"/>  -->
+					<stateValue type="string" value="LayerTree committing" stack="push"/>   
+	            		</stateChange>
+			</action>
+
+			<action id="push_set_opener_for_new_contents">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="SetOpenerForNewContents" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_get_frame_tree">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Get Frame Tree" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_pending_frame_policy">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Pending Frame Policy" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_new_root_SetPendingFramePolicy">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Set Pending Frame Policy" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_new_root_CommitPendingFramePolicy">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Commit Pending Frame Policy" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_new_contents_Init">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="New Content Init" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_site_instance_create">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Site Instance Create" stack="push"/>    
 	            		</stateChange>
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
@@ -270,6 +624,520 @@
 					<stateValue type="eventField" value="cpu" />
 				</stateChange>
 			</action>
+			<action id="push_PreventAssociationWithSpareProcess">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Prevent Association With Spare Process" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_site_instance_GetProcess_GetNextRoutingID">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="GetProcess_GetNextRoutingID" stack="push"/>    
+	            		</stateChange>
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+<!--			<action id="push_RenderProcessHostImpl_GetNextRoutingID">
+		 Push the current event to the thread's callstack 
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Opening a new tab" stack="push"/>    
+	            		</stateChange>
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="New Content Init" stack="push"/>    
+	            		</stateChange>
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="GetProcess_GetNextRoutingID" stack="push"/>    
+	            		</stateChange>
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="RenderProcessHostImpl_GetNextRoutingID" stack="push"/>    
+	            		</stateChange>
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>   -->
+			<action id="push_GetRenderManager_Init">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="GetRenderManager_Init" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_frame_tree_root_SetFrameName">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Frame_tree_root_SetFrameName" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_GetContentClient_browser_GetWebContentsViewDelegate">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="GetContentClient_browser_GetWebContentsViewDelegate" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_view_reset_WebContentsViewChildFrame">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="View_reset_WebContentsViewChildFrame" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_view_reset_CreateWebContentsView">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="View_reset_CreateWebContentsView" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_view_CreateView">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="View_CreateView" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+			<action id="push_NotificationRegistrar_Add">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="NotificationRegistrar_Add" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueue_ReloadEmptyImmediateQueue">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueue_ReloadEmptyImmediateQueue" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueue_BlockedByFence">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueue_BlockedByFence" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueueSets_OnTaskPushedToEmptyQueue">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueueSets_OnTaskPushedToEmptyQueue" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueue_GetFrontTaskEnqueueOrder">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueue_GetFrontTaskEnqueueOrder" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueueSets_GetOldestQueueAndEnqueueOrderInSet">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueueSets_GetOldestQueueAndEnqueueOrderInSet" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueueSets_GetOldestQueueInSet">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueueSets_GetOldestQueueInSet" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueueSets_IsSetEmpty">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueueSets_IsSetEmpty" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueue_RemoveAllCanceledTasksFromFront">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueue_RemoveAllCanceledTasksFromFront" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueue_GetFrontTask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueue_GetFrontTask" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueue_TakeTaskFromWorkQueue">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueue_TakeTaskFromWorkQueue" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_WorkQueueSets_OnPopQueue">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="WorkQueueSets_OnPopQueue" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_TaskQueue_TaskTiming_RecordTaskStart">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="TaskQueue_TaskTiming_RecordTaskStart" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_SchedulerWorker_Delegate_WaitForWork">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="SchedulerWorker_Delegate_WaitForWork" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_SchedulerWorker_GetLastUsedTime">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="SchedulerWorker_GetLastUsedTime" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_PriorityQueue_Transaction_IsEmpty">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="PriorityQueue_Transaction_IsEmpty" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_PriorityQueue_Transaction_PeekSortKey">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="PriorityQueue_Transaction_PeekSortKey" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_PriorityQueue_Transaction_PopSequence">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="PriorityQueue_Transaction_PopSequence" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_TaskTracker_RunAndPopNextTask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="TaskTracker_RunAndPopNextTask" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_Sequence_TakeTask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Sequence_TakeTask" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_TaskTracker_BeforeRunTask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="TaskTracker_BeforeRunTask" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_TaskTracker_AfterRunTask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="TaskTracker_AfterRunTask" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_TaskTracker_RunTask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="TaskTracker_RunTask" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_Sequence_Pop">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Sequence_Pop" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
+			<action id="push_SchedulerWorker_BeginUnusedPeriod">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="SchedulerWorker_BeginUnusedPeriod" stack="push"/>    
+	            		</stateChange>
+
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="cpu" />
+					<stateValue type="eventField" value="cpu" />
+				</stateChange>
+			</action>
+
 			<action id="push_load_page">
 				<!-- Push the current event to the thread's callstack -->
 				<stateChange>
@@ -304,21 +1172,255 @@
 			<fsm id="Chrome_analysis" initial="new_task">
 				<state id="new_task">
 
-					<transition event="chrome:Agent_StartTracing_ProxyToResponder_Run" target="in_thread" action="entering_request:push_thread_start:push_cthreadid"/> 
+					<transition event="chrome:Agent_StartTracing_ProxyToResponder_Run" target="in_thread" action="ensure_thread_present:entering_request:push_cthreadid"/> 
+					<transition event="chrome:LayerTreeImpl_PushPropertyTreesTo" target="in_thread" action="ensure_thread_present:entering_request:push_cthreadid"/> 
+					<transition event="chrome:MessageLoop_RunTask" target="in_thread" action="ensure_thread_present:entering_request:push_cthreadid"/> 
+					<transition event="chrome:SchedulerWorker_Delegate_WaitForWork" target="in_thread" action="ensure_thread_present:entering_request:push_cthreadid"/>
+
 
 				</state>  
 				<state id="in_thread">
 
 					<transition event="chrome:SequenceManagerImpl_TakeTask" cond="same_cthread" target="in_thread" action="pop_event_name:push_newtask"/> 
-					<transition event="chrome:TaskQueueImpl_OnTaskStarted" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_control_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_control_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_default_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_default_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_unthrottled_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_unthrottled_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_frame_loading_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_frame_loading_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_frame_throttleable_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_frame_throttleable_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_frame_deferrable_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_frame_deferrable_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_frame_pausable_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_frame_pausable_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_frame_unpausable_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_frame_unpausable_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_compositor_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_compositor_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_idle_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_idle_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_test_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_test_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_frame_loading_control_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_frame_loading_control_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_v8_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_v8_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_ipc_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_ipc_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_input_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_input_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_detached_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_detached_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_cleanup_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_cleanup_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_other_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_other_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_subthread_default_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_subthread_default_tq"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted_subthread_control_tq" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted_subthread_control_tq"/>
 					<transition event="chrome:TaskQueueImpl_OnTaskCompleted" cond="same_cthread" target="in_thread" action="pop_event_name"/>
-					<transition event="chrome:WebContentsImpl_CreateWithOpener" cond="same_cthread" target="in_thread" action="pop_event_name:push_open_tab"/>
-					<transition event="chrome:WebContentsImpl_CreateWithOpener_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
-					<transition event="chrome:NavigationControllerImpl_LoadURLWithParams" cond="same_cthread" target="in_thread" action="pop_event_name:push_load_page"/>
-					<transition event="chrome:NavigationControllerImpl_LoadURLWithParams_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WebContentsImpl_CreateWithOpener" cond="same_cthread" target="user_action" action="push_open_tab"/>
+					<transition event="chrome:NavigationControllerImpl_LoadURLWithParams" cond="same_cthread" target="user_action" action="pop_event_name:push_load_page"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnKeyEvent" cond="same_cthread" target="in_thread" action="pop_event_name:push_OnKeyEvent"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnMouseEvent" cond="same_cthread" target="in_thread" action="pop_event_name:push_OnMouseEvent"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnScrollEvent" cond="same_cthread" target="in_thread" action="pop_event_name:push_OnScrollEvent"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnTouchEvent" cond="same_cthread" target="in_thread" action="pop_event_name:push_OnTouchEvent"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnGestureEvent" cond="same_cthread" target="in_thread" action="pop_event_name:push_OnGestureEvent"/>
+					<transition event="chrome:LayerTreeHostImpl_BeginCommit" cond="same_cthread" target="in_thread" action="pop_event_name:push_LayerTreeHostImpl_BeginCommit"/>
+					<transition event="chrome:LayerTreeHostImpl_CommitComplete" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnKeyEvent_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnMouseEvent_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnScrollEvent_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnTouchEvent_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:RenderWidgetHostViewBase_OnGestureEvent_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+
+
+					<transition event="chrome:WorkQueue_GetFrontTask" cond="same_cthread" target="in_thread" action="push_WorkQueue_GetFrontTask"/>
+					<transition event="chrome:WorkQueue_GetFrontTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_GetBackTask" cond="same_cthread" target="in_thread" action="push_WorkQueue_GetBackTask"/>
+					<transition event="chrome:WorkQueue_GetBackTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_BlockedByFence" cond="same_cthread" target="in_thread" action="push_WorkQueue_BlockedByFence"/>
+					<transition event="chrome:WorkQueue_BlockedByFence_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_GetFrontTaskEnqueueOrder" cond="same_cthread" target="in_thread" action="push_WorkQueue_GetFrontTaskEnqueueOrder"/>
+					<transition event="chrome:WorkQueue_GetFrontTaskEnqueueOrder_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_Push" cond="same_cthread" target="in_thread" action="push_WorkQueue_Push"/>
+					<transition event="chrome:WorkQueue_Push_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_PushNonNestableTaskToFront" cond="same_cthread" target="in_thread" action="push_WorkQueue_PushNonNestableTaskToFront"/>
+					<transition event="chrome:WorkQueue_PushNonNestableTaskToFront_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_ReloadEmptyImmediateQueue" cond="same_cthread" target="in_thread" action="push_WorkQueue_ReloadEmptyImmediateQueue"/>
+					<transition event="chrome:WorkQueue_ReloadEmptyImmediateQueue_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_TakeTaskFromWorkQueue" cond="same_cthread" target="in_thread" action="push_WorkQueue_TakeTaskFromWorkQueue"/>
+					<transition event="chrome:WorkQueue_TakeTaskFromWorkQueue_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_RemoveAllCanceledTasksFromFront" cond="same_cthread" target="in_thread" action="push_WorkQueue_RemoveAllCanceledTasksFromFront"/>
+					<transition event="chrome:WorkQueue_RemoveAllCanceledTasksFromFront_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_AssignToWorkQueueSets" cond="same_cthread" target="in_thread" action="push_WorkQueue_AssignToWorkQueueSets"/>
+					<transition event="chrome:WorkQueue_AssignToWorkQueueSets_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_AssignSetIndex" cond="same_cthread" target="in_thread" action="push_WorkQueue_AssignSetIndex"/>
+					<transition event="chrome:WorkQueue_AssignSetIndex_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_InsertFenceImpl" cond="same_cthread" target="in_thread" action="push_WorkQueue_InsertFenceImpl"/>
+					<transition event="chrome:WorkQueue_InsertFenceImpl_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_InsertFenceSilently" cond="same_cthread" target="in_thread" action="push_WorkQueue_InsertFenceSilently"/>
+					<transition event="chrome:WorkQueue_InsertFenceSilently_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_InsertFence" cond="same_cthread" target="in_thread" action="push_WorkQueue_InsertFence"/>
+					<transition event="chrome:WorkQueue_InsertFence_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_RemoveFence" cond="same_cthread" target="in_thread" action="push_WorkQueue_RemoveFence"/>
+					<transition event="chrome:WorkQueue_RemoveFence_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_ShouldRunBefore" cond="same_cthread" target="in_thread" action="push_WorkQueue_ShouldRunBefore"/>
+					<transition event="chrome:WorkQueue_ShouldRunBefore_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueue_PopTaskForTesting" cond="same_cthread" target="in_thread" action="push_WorkQueue_PopTaskForTesting"/>
+					<transition event="chrome:WorkQueue_PopTaskForTesting_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_AddQueue" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_AddQueue"/>
+					<transition event="chrome:WorkQueueSets_AddQueue_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_RemoveQueue" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_RemoveQueue"/>
+					<transition event="chrome:WorkQueueSets_RemoveQueue_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_ChangeSetIndex" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_ChangeSetIndex"/>
+					<transition event="chrome:WorkQueueSets_ChangeSetIndex_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_OnFrontTaskChanged" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_OnFrontTaskChanged"/>
+					<transition event="chrome:WorkQueueSets_OnFrontTaskChanged_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_OnTaskPushedToEmptyQueue" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_OnTaskPushedToEmptyQueue"/>
+					<transition event="chrome:WorkQueueSets_OnTaskPushedToEmptyQueue_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_OnPopQueue" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_OnPopQueue"/>
+					<transition event="chrome:WorkQueueSets_OnPopQueue_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_OnQueueBlocked" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_OnQueueBlocked"/>
+					<transition event="chrome:WorkQueueSets_OnQueueBlocked_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_GetOldestQueueInSet" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_GetOldestQueueInSet"/>
+					<transition event="chrome:WorkQueueSets_GetOldestQueueInSet_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_GetOldestQueueAndEnqueueOrderInSet" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_GetOldestQueueAndEnqueueOrderInSet"/>
+					<transition event="chrome:WorkQueueSets_GetOldestQueueAndEnqueueOrderInSet_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_IsSetEmpty" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_IsSetEmpty"/>
+					<transition event="chrome:WorkQueueSets_IsSetEmpty_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WorkQueueSets_ContainsWorkQueueForTest" cond="same_cthread" target="in_thread" action="push_WorkQueueSets_ContainsWorkQueueForTest"/>
+					<transition event="chrome:WorkQueueSets_ContainsWorkQueueForTest_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:ThreadControllerImpl_SetSequencedTaskSource" cond="same_cthread" target="in_thread" action="push_ThreadControllerImpl_SetSequencedTaskSource"/>
+					<transition event="chrome:ThreadControllerImpl_SetSequencedTaskSource_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:ThreadControllerImpl_SetTimerSlack" cond="same_cthread" target="in_thread" action="push_ThreadControllerImpl_SetTimerSlack"/>
+					<transition event="chrome:ThreadControllerImpl_SetTimerSlack_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:ThreadControllerImpl_ScheduleWork" cond="same_cthread" target="in_thread" action="push_ThreadControllerImpl_ScheduleWork"/>
+					<transition event="chrome:ThreadControllerImpl_ScheduleWork_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:ThreadControllerImpl_SetNextDelayedDoWork" cond="same_cthread" target="in_thread" action="push_ThreadControllerImpl_SetNextDelayedDoWork"/>
+					<transition event="chrome:ThreadControllerImpl_SetNextDelayedDoWork_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:ThreadControllerImpl_RunsTasksInCurrentSequence" cond="same_cthread" target="in_thread" action="push_ThreadControllerImpl_RunsTasksInCurrentSequence"/>
+					<transition event="chrome:ThreadControllerImpl_RunsTasksInCurrentSequence_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:ThreadControllerImpl_SetDefaultTaskRunner" cond="same_cthread" target="in_thread" action="push_ThreadControllerImpl_SetDefaultTaskRunner"/>
+					<transition event="chrome:ThreadControllerImpl_SetDefaultTaskRunner_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_TaskTiming_RecordTaskStart" cond="same_cthread" target="in_thread" action="push_TaskQueue_TaskTiming_RecordTaskStart"/>
+					<transition event="chrome:TaskQueue_TaskTiming_RecordTaskStart_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_TaskTiming_RecordTaskEnd" cond="same_cthread" target="in_thread" action="push_TaskQueue_TaskTiming_RecordTaskEnd"/>
+					<transition event="chrome:TaskQueue_TaskTiming_RecordTaskEnd_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_ShutdownTaskQueue" cond="same_cthread" target="in_thread" action="push_TaskQueue_ShutdownTaskQueue"/>
+					<transition event="chrome:TaskQueue_ShutdownTaskQueue_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_RunsTasksInCurrentSequence" cond="same_cthread" target="in_thread" action="push_TaskQueue_RunsTasksInCurrentSequence"/>
+					<transition event="chrome:TaskQueue_RunsTasksInCurrentSequence_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_PostDelayedTask" cond="same_cthread" target="in_thread" action="push_TaskQueue_PostDelayedTask"/>
+					<transition event="chrome:TaskQueue_PostDelayedTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_PostNonNestableDelayedTask" cond="same_cthread" target="in_thread" action="push_TaskQueue_PostNonNestableDelayedTask"/>
+					<transition event="chrome:TaskQueue_PostNonNestableDelayedTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_PostTaskWithMetadata" cond="same_cthread" target="in_thread" action="push_TaskQueue_PostTaskWithMetadata"/>
+					<transition event="chrome:TaskQueue_PostTaskWithMetadata_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					
+
+					<transition event="chrome:TaskQueue_IsQueueEnabled" cond="same_cthread" target="in_thread" action="push_TaskQueue_IsQueueEnabled"/>
+					<transition event="chrome:TaskQueue_IsQueueEnabled_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_GetNumberOfPendingTasks" cond="same_cthread" target="in_thread" action="push_TaskQueue_GetNumberOfPendingTasks"/>
+					<transition event="chrome:TaskQueue_GetNumberOfPendingTasks_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskQueue_IsOnMainThread" cond="same_cthread" target="in_thread" action="push_TaskQueue_IsOnMainThread"/>
+					<transition event="chrome:TaskQueue_IsOnMainThread_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:Sequence_PushTask" cond="same_cthread" target="in_thread" action="push_Sequence_PushTask"/>
+					<transition event="chrome:Sequence_PushTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:Sequence_TakeTask" cond="same_cthread" target="in_thread" action="push_Sequence_TakeTask"/>
+					<transition event="chrome:Sequence_TakeTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:Sequence_Pop" cond="same_cthread" target="in_thread" action="push_Sequence_Pop"/>
+					<transition event="chrome:Sequence_Pop_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:Sequence_GetSortKey" cond="same_cthread" target="in_thread" action="push_Sequence_GetSortKey"/>
+					<transition event="chrome:Sequence_GetSortKey_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_Delegate_WaitForWork" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_Delegate_WaitForWork"/>
+					<transition event="chrome:SchedulerWorker_Delegate_WaitForWork_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_Start" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_Start"/>
+					<transition event="chrome:SchedulerWorker_Start_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_WakeUp" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_WakeUp"/>
+					<transition event="chrome:SchedulerWorker_WakeUp_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_JoinForTesting" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_JoinForTesting"/>
+					<transition event="chrome:SchedulerWorker_JoinForTesting_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					
+
+
+					<transition event="chrome:SchedulerWorker_ThreadAliveForTesting" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_ThreadAliveForTesting"/>
+					<transition event="chrome:SchedulerWorker_ThreadAliveForTesting_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_Cleanup" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_Cleanup"/>
+					<transition event="chrome:SchedulerWorker_Cleanup_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_BeginUnusedPeriod" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_BeginUnusedPeriod"/>
+					<transition event="chrome:SchedulerWorker_BeginUnusedPeriod_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_EndUnusedPeriod" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_EndUnusedPeriod"/>
+					<transition event="chrome:SchedulerWorker_EndUnusedPeriod_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_GetLastUsedTime" cond="same_cthread" target="in_thread" action="push_SchedulerWorker_GetLastUsedTime"/>
+					<transition event="chrome:SchedulerWorker_GetLastUsedTime_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:PriorityQueue_Transaction_Push" cond="same_cthread" target="in_thread" action="push_PriorityQueue_Transaction_Push"/>
+					<transition event="chrome:PriorityQueue_Transaction_Push_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:PriorityQueue_Transaction_PeekSortKey" cond="same_cthread" target="in_thread" action="push_PriorityQueue_Transaction_PeekSortKey"/>
+					<transition event="chrome:PriorityQueue_Transaction_PeekSortKey_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:PriorityQueue_Transaction_PopSequence" cond="same_cthread" target="in_thread" action="push_PriorityQueue_Transaction_PopSequence"/>
+					<transition event="chrome:PriorityQueue_Transaction_PopSequence_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:PriorityQueue_Transaction_IsEmpty" cond="same_cthread" target="in_thread" action="push_PriorityQueue_Transaction_IsEmpty"/>
+					<transition event="chrome:PriorityQueue_Transaction_IsEmpty_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:PriorityQueue_Transaction_Size" cond="same_cthread" target="in_thread" action="push_PriorityQueue_Transaction_Size"/>
+					<transition event="chrome:PriorityQueue_Transaction_Size_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SequenceManagerImpl_BindToCurrentThread" cond="same_cthread" target="in_thread" action="push_SequenceManagerImpl_BindToCurrentThread"/>
+					<transition event="chrome:SequenceManagerImpl_BindToCurrentThread_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					
+
+
+					<transition event="chrome:SequenceManagerImpl_CompleteInitializationOnBoundThread" cond="same_cthread" target="in_thread" action="push_SequenceManagerImpl_CompleteInitializationOnBoundThread"/>
+					<transition event="chrome:SequenceManagerImpl_CompleteInitializationOnBoundThread_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SequenceManagerImpl_AddToIncomingImmediateWorkList" cond="same_cthread" target="in_thread" action="push_SequenceManagerImpl_AddToIncomingImmediateWorkList"/>
+					<transition event="chrome:SequenceManagerImpl_AddToIncomingImmediateWorkList_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SequenceManagerImpl_RemoveFromIncomingImmediateWorkList" cond="same_cthread" target="in_thread" action="push_SequenceManagerImpl_RemoveFromIncomingImmediateWorkList"/>
+					<transition event="chrome:SequenceManagerImpl_RemoveFromIncomingImmediateWorkList_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SequenceManagerImpl_OnBeginNestedRunLoop" cond="same_cthread" target="in_thread" action="push_SequenceManagerImpl_OnBeginNestedRunLoop"/>
+					<transition event="chrome:SequenceManagerImpl_OnBeginNestedRunLoop_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SequenceManagerImpl_OnExitNestedRunLoop" cond="same_cthread" target="in_thread" action="push_SequenceManagerImpl_OnExitNestedRunLoop"/>
+					<transition event="chrome:SequenceManagerImpl_OnExitNestedRunLoop_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SequenceManagerImpl_OnQueueHasIncomingImmediateWork" cond="same_cthread" target="in_thread" action="push_SequenceManagerImpl_OnQueueHasIncomingImmediateWork"/>
+					<transition event="chrome:SequenceManagerImpl_OnQueueHasIncomingImmediateWork_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SequenceManagerImpl_MaybeScheduleImmediateWork" cond="same_cthread" target="in_thread" action="push_SequenceManagerImpl_MaybeScheduleImmediateWork"/>
+					<transition event="chrome:SequenceManagerImpl_MaybeScheduleImmediateWork_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskTracker_WillPostTask" cond="same_cthread" target="in_thread" action="push_TaskTracker_WillPostTask"/>
+					<transition event="chrome:TaskTracker_WillPostTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskTracker_RunAndPopNextTask" cond="same_cthread" target="in_thread" action="push_TaskTracker_RunAndPopNextTask"/>
+					<transition event="chrome:TaskTracker_RunAndPopNextTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskTracker_BeforeRunTask" cond="same_cthread" target="in_thread" action="push_TaskTracker_BeforeRunTask"/>
+					<transition event="chrome:TaskTracker_BeforeRunTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:TaskTracker_AfterRunTask" cond="same_cthread" target="in_thread" action="push_TaskTracker_AfterRunTask"/>
+					<transition event="chrome:TaskTracker_AfterRunTask_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+	
+
+
+
 					<transition event="chrome:CoordinatorProxy_StopAndFlush" target="end_thread" action="pop_all"/>
 				</state>
-				
+
+				<state id="user_action">
+					<transition event="chrome:WebContentsImpl_new_contents_SetOpenerForNewContents" cond="same_cthread" target="user_action" action="push_set_opener_for_new_contents"/>
+				<!--	<transition event="chrome:WebContentsImpl_new_contents_SetOpenerForNewContents_END" cond="same_cthread" target="user_action" action="pop_event_name"/>	-->
+					<transition event="chrome:WebContentsImpl_new_contents_GetFrameTree_root" cond="same_cthread" target="user_action" action="push_get_frame_tree"/>
+				<!--	<transition event="chrome:WebContentsImpl_new_contents_GetFrameTree_root_END" cond="same_cthread" target="user_action" action="pop_event_name"/>	-->
+					<transition event="chrome:WebContentsImpl_pending_frame_policy" cond="same_cthread" target="user_action" action="push_pending_frame_policy"/>
+				<!--	<transition event="chrome:WebContentsImpl_pending_frame_policy_END" cond="same_cthread" target="user_action" action="pop_event_name"/>-->
+					<transition event="chrome:WebContentsImpl_new_root_SetPendingFramePolicy" cond="same_cthread" target="user_action" action="push_new_root_SetPendingFramePolicy"/>
+				<!--	<transition event="chrome:WebContentsImpl_new_root_SetPendingFramePolicy_END" cond="same_cthread" target="user_action" action="pop_event_name"/>-->
+					<transition event="chrome:WebContentsImpl_new_root_CommitPendingFramePolicy" cond="same_cthread" target="user_action" action="push_new_root_CommitPendingFramePolicy"/>
+				<!--	<transition event="chrome:WebContentsImpl_new_root_CommitPendingFramePolicy_END" cond="same_cthread" target="user_action" action="pop_event_name"/>-->
+					<transition event="chrome:WebContentsImpl_new_contents_Init" cond="same_cthread" target="user_action" action="push_new_contents_Init"/>
+				<!--	<transition event="chrome:WebContentsImpl_new_contents_Init_END" cond="same_cthread" target="user_action" action="pop_event_name"/>-->
+					<transition event="chrome:SiteInstance_Create" cond="same_cthread" target="user_action" action="push_site_instance_create"/>
+				<!--	<transition event="chrome:SiteInstance_Create_END" cond="same_cthread" target="user_action" action="pop_event_name"/>-->
+					<transition event="chrome:PreventAssociationWithSpareProcess" cond="same_cthread" target="user_action" action="push_PreventAssociationWithSpareProcess"/>
+				<!--	<transition event="chrome:PreventAssociationWithSpareProcess_END" cond="same_cthread" target="user_action" action="pop_event_name"/>-->
+					<transition event="chrome:site_instance_GetProcess_GetNextRoutingID" cond="same_cthread" target="user_action" action="push_site_instance_GetProcess_GetNextRoutingID"/>
+					<transition event="chrome:site_instance_GetProcess_GetNextRoutingID_END" cond="same_cthread" target="user_action" action="pop_event_name"/>
+					<transition event="chrome:GetRenderManager_Init" cond="same_cthread" target="user_action" action="push_GetRenderManager_Init"/>
+					<transition event="chrome:GetRenderManager_Init_END" cond="same_cthread" target="user_action" action="pop_event_name"/>
+					<transition event="chrome:frame_tree_root_SetFrameName" cond="same_cthread" target="user_action" action="push_frame_tree_root_SetFrameName"/>
+					<transition event="chrome:frame_tree_root_SetFrameName_END" cond="same_cthread" target="user_action" action="pop_event_name"/>
+					<transition event="chrome:GetContentClient_browser_GetWebContentsViewDelegate" cond="same_cthread" target="user_action" action="push_GetContentClient_browser_GetWebContentsViewDelegate"/>
+					<transition event="chrome:GetContentClient_browser_GetWebContentsViewDelegate_END" cond="same_cthread" target="user_action" action="pop_event_name"/>
+					<transition event="chrome:view_reset_WebContentsViewChildFrame" cond="same_cthread" target="user_action" action="push_view_reset_WebContentsViewChildFrame"/>
+					<transition event="chrome:view_reset_WebContentsViewChildFrame_END" cond="same_cthread" target="user_action" action="pop_event_name"/>
+					<transition event="chrome:view_reset_CreateWebContentsView" cond="same_cthread" target="user_action" action="push_view_reset_CreateWebContentsView"/>
+					<transition event="chrome:view_reset_CreateWebContentsView_END" cond="same_cthread" target="user_action" action="pop_event_name"/>
+					<transition event="chrome:view_CreateView" cond="same_cthread" target="user_action" action="push_view_CreateView"/>
+					<transition event="chrome:view_CreateView_END" cond="same_cthread" target="user_action" action="pop_event_name"/>
+					<transition event="chrome:NotificationRegistrar_Add" cond="same_cthread" target="user_action" action="push_NotificationRegistrar_Add"/>
+					<transition event="chrome:NotificationRegistrar_Add_END" cond="same_cthread" target="user_action" action="pop_event_name"/>
+					<transition event="chrome:WebContentsImpl_CreateWithOpener_END" cond="same_cthread" target="in_thread" action="pop_all"/>
+					<transition event="chrome:ContentFaviconDriver_DidUpdateFaviconURL" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+
+				</state>
+			
+
 				<final id="end_thread"/>
 			</fsm>
 			
