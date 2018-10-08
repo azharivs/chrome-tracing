@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/*sva begin*/
+#define TRACEPOINT_DEFINE
+#define TRACEPOINT_PROBE_DYNAMIC_LINKAGE
+#include "chrome-sch-worker-tp_taketask.h"
+//#include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+/*sva end*/
+
+
 #include "base/task/task_scheduler/task_tracker.h"
 
 #include <limits>
@@ -24,6 +36,14 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+
+static void * tppHandle5 = NULL;//sva
+static int soLoaded5 = 0;//sva
+static void * tppHandle2 = NULL;//sva
+static int soLoaded2 = 0;//sva
+static void * tppHandle3 = NULL;//sva
+static int soLoaded3 = 0;//sva
+
 
 namespace base {
 namespace internal {
@@ -339,11 +359,42 @@ void TaskTracker::FlushAsyncForTesting(OnceClosure flush_callback) {
 }
 
 bool TaskTracker::WillPostTask(Task* task) {
-  TRACE_EVENT0("dorsal", "TaskTracker::WillPostTask");
+  //TRACE_EVENT0("dorsal", "TaskTracker::WillPostTask");
+     //const char* TaskName = TaskQueue::GetName();
+// Majid start
+
+
+void (*tp_ptr)(long int, /*const char*, int,*/ const char*, const char*, int);
+        char *error;
+
+        if (!soLoaded5){
+            tppHandle5 = dlopen("/home/majid/Documents/chromium/src/lib5.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle5) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded5 = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr) = dlsym(tppHandle5, "_Z24TaskTracker_WillPostTasklPcS_i");
+
+        if ((error = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error);
+        }
+
+        (*tp_ptr)((long int) task_annotator_.GetTaskTraceID(*task), /*(const char*) TaskName, (int) task->task_type(),*/ (const char*) task->posted_from.file_name(), (const char*) task->posted_from.function_name(), (int) task->posted_from.line_number());
+
+
+// Majid end
+
+
   DCHECK(task->task);
 
   if (!BeforePostTask(task->traits.shutdown_behavior())){
-  TRACE_EVENT0("dorsal", "TaskTracker::WillPostTask_END");
+  //TRACE_EVENT0("dorsal", "TaskTracker::WillPostTask_END");
     return false;}
 
   if (task->delayed_run_time.is_null())
@@ -357,14 +408,43 @@ bool TaskTracker::WillPostTask(Task* task) {
   }
 
   task_annotator_.WillQueueTask(nullptr, task);
-  TRACE_EVENT0("dorsal", "TaskTracker::WillPostTask_END");
+  //TRACE_EVENT0("dorsal", "TaskTracker::WillPostTask_END");
   return true;
-  TRACE_EVENT0("dorsal", "TaskTracker::WillPostTask_END");
+  //TRACE_EVENT0("dorsal", "TaskTracker::WillPostTask_END");
 }
 
 scoped_refptr<Sequence> TaskTracker::WillScheduleSequence(
     scoped_refptr<Sequence> sequence,
     CanScheduleSequenceObserver* observer) {
+  //Optional<Task> task = sequence->TakeTask();
+// Majid start
+/*
+
+void (*tp_ptr)(long int, const char*, int, const char*, const char*, int);
+        char *error;
+
+        if (!soLoaded5){
+            tppHandle5 = dlopen("/home/majid/Documents/chromium/src/lib5.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle5) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded5 = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr) = dlsym(tppHandle5, "_Z32TaskTracker_WillScheduleSequencelPcS_i");
+
+        if ((error = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error);
+        }
+
+        (*tp_ptr)((long int) task_annotator_.GetTaskTraceID(*task), (const char*) TaskName, (in) task.task_type(), (const char*) task->posted_from.file_name(), (const char*) task->posted_from.function_name(), (int) task->posted_from.line_number());
+
+// Majid end
+*/
   const SequenceSortKey sort_key = sequence->GetSortKey();
 
   // A foreground sequence can always be scheduled.
@@ -398,6 +478,36 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   Optional<Task> task = sequence->TakeTask();
   // TODO(fdoray): Support TakeTask() returning null. https://crbug.com/783309
   DCHECK(task);
+     //const char* TaskName = TaskQueue::GetName();
+// Majid start
+
+
+void (*tp_ptr)(long int, /*const char*, int,*/ const char*, const char*, int);
+        char *error;
+
+        if (!soLoaded5){
+            tppHandle5 = dlopen("/home/majid/Documents/chromium/src/lib5.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle5) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded5 = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr) = dlsym(tppHandle5, "_Z29TaskTracker_RunAndPopNextTasklPcS_i");
+
+        if ((error = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error);
+        }
+
+        (*tp_ptr)((long int) task_annotator_.GetTaskTraceID(*task), /*(const char*) TaskName, (in) task.task_type(),*/ (const char*) task->posted_from.file_name(), (const char*) task->posted_from.function_name(), (int) task->posted_from.line_number());
+
+// Majid end
+
+
 
   const TaskShutdownBehavior shutdown_behavior =
       task->traits.shutdown_behavior();
@@ -406,9 +516,68 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   const bool is_delayed = !task->delayed_run_time.is_null();
 
   RunOrSkipTask(std::move(task.value()), sequence.get(), can_run_task);
-  if (can_run_task)
-    AfterRunTask(shutdown_behavior);
+  if (can_run_task){
+// Majid start
 
+
+void (*tp_ptr2)(long int, /*const char*, int,*/ const char*, const char*, int);
+        char *error2;
+
+        if (!soLoaded2){
+            tppHandle2 = dlopen("/home/majid/Documents/chromium/src/lib5.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle2) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded2 = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr2) = dlsym(tppHandle2, "_Z19TaskTracker_WillRunlPcS_i");
+
+        if ((error2 = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error2);
+        }
+
+        (*tp_ptr2)((long int) task_annotator_.GetTaskTraceID(*task), /*(const char*) TaskName, (in) task.task_type(),*/ (const char*) task->posted_from.file_name(), (const char*) task->posted_from.function_name(), (int) task->posted_from.line_number());
+
+// Majid end
+
+    AfterRunTask(shutdown_behavior);
+   }
+
+  else{
+	// Majid start
+
+
+void (*tp_ptr3)(long int, /*const char*, int,*/ const char*, const char*, int);
+        char *error3;
+
+        if (!soLoaded3){
+            tppHandle3 = dlopen("/home/majid/Documents/chromium/src/lib5.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle3) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded3 = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr3) = dlsym(tppHandle3, "_Z20TaskTracker_WillSkiplPcS_i");
+
+        if ((error3 = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error3);
+        }
+
+        (*tp_ptr3)((long int) task_annotator_.GetTaskTraceID(*task), /*(const char*) TaskName, (in) task.task_type(),*/ (const char*) task->posted_from.file_name(), (const char*) task->posted_from.function_name(), (int) task->posted_from.line_number());
+
+// Majid end
+
+  }
   if (!is_delayed)
     DecrementNumIncompleteUndelayedTasks();
 
@@ -454,8 +623,9 @@ void TaskTracker::RecordLatencyHistogram(
     LatencyHistogramType latency_histogram_type,
     TaskTraits task_traits,
     TimeTicks posted_time) const {
+  TRACE_EVENT0("dorsal", "TaskTracker::RecordLatencyHistogram");
   const TimeDelta task_latency = TimeTicks::Now() - posted_time;
-
+printf("-----------------------Task latency is: %ld  ------------------------------------",task_latency.InNanoseconds());
   DCHECK(latency_histogram_type == LatencyHistogramType::TASK_LATENCY ||
          latency_histogram_type == LatencyHistogramType::HEARTBEAT_LATENCY);
   const auto& histograms =
@@ -467,6 +637,7 @@ void TaskTracker::RecordLatencyHistogram(
                  ? 1
                  : 0]
                 ->AddTimeMicrosecondsGranularity(task_latency);
+  TRACE_EVENT0("dorsal", "TaskTracker::RecordLatencyHistogram_END");
 }
 
 void TaskTracker::RunOrSkipTask(Task task,
@@ -531,6 +702,7 @@ void TaskTracker::RunOrSkipTask(Task task,
             TRACE_ID_MANGLE(task_annotator_.GetTaskTraceID(task)),
             TRACE_EVENT_FLAG_FLOW_IN);
       }
+     //const char* TaskName = TaskQueue::GetName();
 
       task_annotator_.RunTask(nullptr, &task);
     }
