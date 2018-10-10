@@ -23,6 +23,7 @@
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 
 namespace base {
 namespace sequence_manager {
@@ -336,7 +337,7 @@ void SequenceManagerImpl::SetNextDelayedDoWork(LazyNow* lazy_now,
 Optional<PendingTask> SequenceManagerImpl::TakeTask() {
   //TRACE_EVENT0("dorsal", "SequenceManagerImpl::TakeTask");
   Optional<PendingTask> task = TakeTaskImpl();
-//printf("****************************************************************************Filename is:********************************************\n                                                        %s\n",(task)->posted_from.file_name());
+
   if (!task)
     return base::nullopt;
 
@@ -359,8 +360,6 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
 
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   TRACE_EVENT0("sequence_manager", "SequenceManagerImpl::TakeTask");
-  /*internal::TaskQueueImpl* task_queue;
-	task_queue->GetNumberOfPendingTasks();*/
 
   {
     AutoLock lock(any_thread_lock_);
@@ -421,6 +420,37 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
 
     ExecutingTask& executing_task =
         *main_thread_only().task_execution_stack.rbegin();
+
+// Majid start
+/*
+
+void (*tp_ptr)(long int, const char*, int, const char*, const char*, int);
+        char *error;
+
+        if (!soLoaded5){
+            tppHandle5 = dlopen("/home/majid/Documents/chromium/src/lib5.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle5) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded5 = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr) = dlsym(tppHandle5, "_Z28SequenceManagerImpl_TakeTasklPciS_S_i");
+
+        if ((error = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error);
+        }
+
+       (*tp_ptr)((long int) task_annotator_.GetTaskTraceID(std::move(executing_task.pending_task)), (const char*) executing_task.task_queue->GetName(), (int) executing_task.task_type, (const char*) executing_task.pending_task.posted_from.file_name(), (const char*) executing_task.pending_task.posted_from.function_name(), (int) executing_task.pending_task.posted_from.line_number());
+
+*/
+// Majid end
+
+
     NotifyWillProcessTask(&executing_task, &lazy_now);
   TRACE_EVENT0("dorsal", "SequenceManagerImpl::TakeTask_END");
     return std::move(executing_task.pending_task);

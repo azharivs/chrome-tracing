@@ -24,9 +24,10 @@
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "base/trace_event/trace_event.h"
+#include "base/task/task_scheduler/task_tracker.h"
 
-static void * tppHandle = NULL;//sva
-static int soLoaded = 0;//sva
+static void * tppHandle3 = NULL;//sva
+static int soLoaded3 = 0;//sva
 
 namespace base {
 namespace sequence_manager {
@@ -407,24 +408,24 @@ size_t TaskQueueImpl::GetNumberOfPendingTasks() const {
   task_count_immediate_incoming_queue = immediate_incoming_queue().size();
 
 // Majid start
-
+/*
 
 void (*tp_ptr)(int, int, int, int);
         char *error;
 
-        if (!soLoaded){
-            tppHandle = dlopen("/home/majid/Documents/chromium/src/lib3.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
-            if (!tppHandle) {
+        if (!soLoaded3){
+            tppHandle3 = dlopen("/home/majid/Documents/chromium/src/lib3.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle3) {
                  fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
             }
             else {
-                soLoaded = 1;
+                soLoaded3 = 1;
             }
         }
 
         dlerror();
 
-        *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z12pendingtasksiiii");
+        *(void **) (&tp_ptr) = dlsym(tppHandle3, "_Z12pendingtasksiiii");
 
         if ((error = dlerror()) != NULL)  {
              fprintf(stderr, "00: Upon dlsym: %s\n", error);
@@ -433,10 +434,10 @@ void (*tp_ptr)(int, int, int, int);
        
         (*tp_ptr)((int) task_count_delayed_work_queue, (int) task_count_delayed_incoming_queue, (int) task_count_immediate_work_queue, (int) task_count_immediate_incoming_queue);
 
-
+*/
 // Majid end
 
-	printf("\n\n\n*********************************  GetNumberOfPendingTasks:  *********************************\nTask_count_delayed_work_queue: %zu\nTask_count_delayed_incoming_queue: %zu\nTask_count_immediate_work_queue: %zu\nTask_count_immediate_incoming_queue: %zu\n\n\n", task_count_delayed_work_queue, task_count_delayed_incoming_queue, task_count_immediate_work_queue, task_count_immediate_incoming_queue);
+	/*printf("\n\n\n*********************************  GetNumberOfPendingTasks:  *********************************\nTask_count_delayed_work_queue: %zu\nTask_count_delayed_incoming_queue: %zu\nTask_count_immediate_work_queue: %zu\nTask_count_immediate_incoming_queue: %zu\n\n\n", task_count_delayed_work_queue, task_count_delayed_incoming_queue, task_count_immediate_work_queue, task_count_immediate_incoming_queue);*/
   return task_count;
 }
 
@@ -1019,10 +1020,40 @@ void TaskQueueImpl::SetOnTaskStartedHandler(
 
 void TaskQueueImpl::OnTaskStarted(const TaskQueue::Task& task,
                                   const TaskQueue::TaskTiming& task_timing) {
-	printf("************************************TaskStarted, type is: %d \nName is: %s \nFname: %s \nLine number: %d \nProgramcounter: %p\n", task.task_type(), (task).posted_from.file_name(), (task).posted_from.function_name(), (task).posted_from.line_number(), (task).posted_from.program_counter());
-  printf("------------------------------OnTaskStarted---------------------------------\n\n");
-	TaskQueueImpl::GetNumberOfPendingTasks();
+	printf("************************************TaskStarted, type is: %d \nName is: %s \nFname: %s \nLine number: %d \nProgramcounter: %p\nTask ID: %ld\n\n\n", task.task_type(), (task).posted_from.file_name(), (task).posted_from.function_name(), (task).posted_from.line_number(), (task).posted_from.program_counter(), task_annotator_.GetTaskTraceID(task));
+
      const char* TaskName = TaskQueueImpl::GetName();
+
+// Majid start
+
+
+void (*tp_ptr)(long int, const char*, int, const char*, const char*, int);
+        char *error;
+
+        if (!soLoaded3){
+            tppHandle3 = dlopen("/home/majid/Documents/chromium/src/lib3.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle3) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded3 = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr) = dlsym(tppHandle3, "_Z27TaskQueueImpl_OnTaskStartedlPciS_S_i");
+
+        if ((error = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error);
+        }
+
+       
+        (*tp_ptr)((long int) task_annotator_.GetTaskTraceID(task), (const char*) TaskName, (int) task.task_type(), (const char*) (task).posted_from.file_name(), (const char*) (task).posted_from.function_name(), (int) (task).posted_from.line_number());
+
+
+// Majid end
+ /*    const char* TaskName = TaskQueueImpl::GetName();
      if (strcmp(TaskName, "control_tq") == 0){
 	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_control_tq");
      }
@@ -1083,7 +1114,7 @@ void TaskQueueImpl::OnTaskStarted(const TaskQueue::Task& task,
      else if (strcmp(TaskName,  "subthread_control_tq") == 0){
 	TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskStarted_subthread_control_tq");
      }
- 
+ */
 
   if (!main_thread_only().on_task_started_handler.is_null())
     main_thread_only().on_task_started_handler.Run(task, task_timing);
@@ -1099,8 +1130,37 @@ void TaskQueueImpl::OnTaskCompleted(const TaskQueue::Task& task,
      TRACE_EVENT0("dorsal", "TaskQueueImpl::OnTaskCompleted");
   if (!main_thread_only().on_task_completed_handler.is_null())
     main_thread_only().on_task_completed_handler.Run(task, task_timing);
-  printf("------------------------------OnTaskCompleted---------------------------------\n\n");
-	TaskQueueImpl::GetNumberOfPendingTasks();
+printf("************************************TaskCompleted, type is: %d \nName is: %s \nFname: %s \nLine number: %d \nProgramcounter: %p\n\n\n\n", task.task_type(), (task).posted_from.file_name(), (task).posted_from.function_name(), (task).posted_from.line_number(), (task).posted_from.program_counter());
+     const char* TaskName = TaskQueueImpl::GetName();
+// Majid start
+
+
+void (*tp_ptr)(long int, const char*, int, const char*, const char*, int);
+        char *error;
+
+        if (!soLoaded3){
+            tppHandle3 = dlopen("/home/majid/Documents/chromium/src/lib3.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
+            if (!tppHandle3) {
+                 fprintf(stderr, "00: Upon dlopen: %s\n", dlerror());
+            }
+            else {
+                soLoaded3 = 1;
+            }
+        }
+
+        dlerror();
+
+        *(void **) (&tp_ptr) = dlsym(tppHandle3, "_Z29TaskQueueImpl_OnTaskCompletedlPciS_S_i");
+
+        if ((error = dlerror()) != NULL)  {
+             fprintf(stderr, "00: Upon dlsym: %s\n", error);
+        }
+
+       
+        (*tp_ptr)((long int) task_annotator_.GetTaskTraceID(task), (const char*) TaskName, (int) task.task_type(), (const char*) (task).posted_from.file_name(), (const char*) (task).posted_from.function_name(), (int) (task).posted_from.line_number());
+
+
+// Majid end
 }
 
 bool TaskQueueImpl::RequiresTaskTiming() const {
