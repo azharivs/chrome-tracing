@@ -15,9 +15,12 @@
             <label value="Chrome Task Analysis" />
         </head>   
         
+<<<<<<< HEAD
         <definedValue name="first_task" value="0" />
 
 
+=======
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
         <location id="CurrentThread">
         	<stateAttribute type="constant" value="Threads" />
 		<stateAttribute type="query">
@@ -56,6 +59,7 @@
 					</condition>
 				</if>
 			</test>
+<<<<<<< HEAD
 	<!--		<test id="first_task">
 				<if>
 					<condition>
@@ -66,6 +70,19 @@
 					</condition>
 				</if>
 			</test>  -->
+=======
+			<test id="same_cthread_sched">
+				<if>
+					<condition>
+						<stateValue type="eventField" value="prev_tid" forcedType="int"/>
+						<stateValue type="query">
+							<stateAttribute type="constant" value="#CurrentScenario" />
+							<stateAttribute type="constant" value="cthreadID" />
+						</stateValue>
+					</condition>
+				</if>
+			</test>
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 			<test id="IsEventRunTaskLoop">
 				<if>
 					<condition>
@@ -108,6 +125,7 @@
 			</test>
 			<!-- ACTIONS -->
 	
+<<<<<<< HEAD
 			<action id="ensure_thread_present">
 				<!-- Push the current event to the thread's callstack -->
 				<stateChange>
@@ -132,6 +150,8 @@
 			</action>
 
 
+=======
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 			<!-- Actions and test for time graph view threads -->
 			<action id="entering_request_old">
 				<!-- Initialize current scenario data: component, type of thread, queries and drawing event counts -->
@@ -228,11 +248,14 @@
 	                    		<stateAttribute type="constant" value="CallStack" />
 					<stateValue type="eventName" stack="pop"/>     
 	            		</stateChange>
+<<<<<<< HEAD
 			<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
 	                    		<stateAttribute type="constant" value="CallStack" />
 					<stateValue type="eventName" stack="pop"/>     
 	            		</stateChange>
+=======
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 			</action>
 			<action id="pop_all">
 				<!-- Pop the current event from the callstack -->
@@ -278,6 +301,7 @@
 					<stateValue type="string" value="Thread start" stack="push"/>   
 	            		</stateChange>
 			</action>
+<<<<<<< HEAD
 			<action id="push_TaskStarted_control_tq">
 				<!-- Push the current event to the thread's callstack -->
 				<stateChange>
@@ -450,12 +474,19 @@
 	            		</stateChange>
 			</action>
 			<action id="push_TaskStarted_subthread_control_tq">
+=======
+			<action id="push_TaskStarted">
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 				<!-- Push the current event to the thread's callstack -->
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
 	                    		<stateAttribute type="constant" value="CallStack" />
 	<!--				<stateValue type="eventName" stack="push"/>    -->
+<<<<<<< HEAD
 					<stateValue type="string" value="Task subthread_control_tq running" stack="push"/>    
+=======
+					<stateValue type="string" value="Task running" stack="push"/>    
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 	            		</stateChange>
 			</action>
 			<action id="push_open_tab">
@@ -463,6 +494,7 @@
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
 	                    		<stateAttribute type="constant" value="CallStack" />
+<<<<<<< HEAD
 					<!--<stateValue type="eventName" stack="push"/>  -->
 					<stateValue type="string" value="Opening a new tab" stack="push"/>   
 	            		</stateChange>
@@ -530,27 +562,43 @@
 					<stateValue type="string" value="SetOpenerForNewContents" stack="push"/>    
 	            		</stateChange>
 
+=======
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Opening a new tab" stack="push"/>    
+	            		</stateChange>
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
 	                    		<stateAttribute type="constant" value="cpu" />
 					<stateValue type="eventField" value="cpu" />
 				</stateChange>
 			</action>
+<<<<<<< HEAD
 
 			<action id="push_get_frame_tree">
+=======
+			<action id="push_load_page">
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 				<!-- Push the current event to the thread's callstack -->
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
 	                    		<stateAttribute type="constant" value="CallStack" />
+<<<<<<< HEAD
 					<stateValue type="string" value="Get Frame Tree" stack="push"/>    
 	            		</stateChange>
 
+=======
+	<!--				<stateValue type="eventName" stack="push"/>    -->
+					<stateValue type="string" value="Loading a webpage" stack="push"/>    
+	            		</stateChange>
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
 	                    		<stateAttribute type="constant" value="cpu" />
 					<stateValue type="eventField" value="cpu" />
 				</stateChange>
 			</action>
+<<<<<<< HEAD
 
 			<action id="push_pending_frame_policy">
 				<!-- Push the current event to the thread's callstack -->
@@ -1421,6 +1469,43 @@
 				</state>
 			
 
+=======
+			<action id="push_cthreadid">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+					<stateAttribute type="constant" value="#CurrentScenario" />
+					<stateAttribute type="constant" value="cthreadID" />
+					<stateValue type="eventField" value="context._vtid" forcedType="int"/>
+				</stateChange>
+			</action>
+			
+			<action id="entering_request">
+				<stateChange>
+					<stateAttribute type="constant" value="#CurrentScenario" />
+					<stateAttribute type="constant" value="threadID" />
+					<stateValue type="eventField" value="context._vtid" forcedType="int"/>
+				</stateChange>
+			</action>
+	
+			<fsm id="Chrome_analysis" initial="new_task">
+				<state id="new_task">
+
+					<transition event="chrome:Agent_StartTracing_ProxyToResponder_Run" target="in_thread" action="entering_request:push_thread_start:push_cthreadid"/> 
+
+				</state>  
+				<state id="in_thread">
+
+					<transition event="chrome:SequenceManagerImpl_TakeTask" cond="same_cthread" target="in_thread" action="pop_event_name:push_newtask"/> 
+					<transition event="chrome:TaskQueueImpl_OnTaskStarted" cond="same_cthread" target="in_thread" action="pop_event_name:push_TaskStarted"/>
+					<transition event="chrome:TaskQueueImpl_OnTaskCompleted" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:WebContentsImpl_CreateWithOpener" cond="same_cthread" target="in_thread" action="pop_event_name:push_open_tab"/>
+					<transition event="chrome:WebContentsImpl_CreateWithOpener_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:NavigationControllerImpl_LoadURLWithParams" cond="same_cthread" target="in_thread" action="pop_event_name:push_load_page"/>
+					<transition event="chrome:NavigationControllerImpl_LoadURLWithParams_END" cond="same_cthread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:CoordinatorProxy_StopAndFlush" target="end_thread" action="pop_all"/>
+				</state>
+				
+>>>>>>> 26cb616b... The first version of the XML view showing task execution as well as user actions
 				<final id="end_thread"/>
 			</fsm>
 			
