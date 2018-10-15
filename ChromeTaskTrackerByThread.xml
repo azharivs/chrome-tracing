@@ -971,12 +971,6 @@
 	                    		<stateAttribute type="constant" value="CallStack" />
 					<stateValue type="string" value="SchedulerWorker_Delegate_WaitForWork" stack="push"/>    
 	            		</stateChange>
-
-				<stateChange>
-	                    		<stateAttribute type="location" value="CurrentThread" />
-	                    		<stateAttribute type="constant" value="cpu" />
-					<stateValue type="eventField" value="cpu" />
-				</stateChange>
 			</action>
 
 			<action id="push_SchedulerWorker_GetLastUsedTime">
@@ -986,27 +980,6 @@
 	                    		<stateAttribute type="constant" value="CallStack" />
 					<stateValue type="string" value="SchedulerWorker_GetLastUsedTime" stack="push"/>    
 	            		</stateChange>
-
-				<stateChange>
-	                    		<stateAttribute type="location" value="CurrentThread" />
-	                    		<stateAttribute type="constant" value="cpu" />
-					<stateValue type="eventField" value="cpu" />
-				</stateChange>
-			</action>
-
-			<action id="push_PriorityQueue_Transaction_IsEmpty">
-				<!-- Push the current event to the thread's callstack -->
-				<stateChange>
-	                    		<stateAttribute type="location" value="CurrentThread" />
-	                    		<stateAttribute type="constant" value="CallStack" />
-					<stateValue type="string" value="PriorityQueue_Transaction_IsEmpty" stack="push"/>    
-	            		</stateChange>
-
-				<stateChange>
-	                    		<stateAttribute type="location" value="CurrentThread" />
-	                    		<stateAttribute type="constant" value="cpu" />
-					<stateValue type="eventField" value="cpu" />
-				</stateChange>
 			</action>
 
 			<action id="push_PriorityQueue_Transaction_PeekSortKey">
@@ -1016,12 +989,6 @@
 	                    		<stateAttribute type="constant" value="CallStack" />
 					<stateValue type="string" value="PriorityQueue_Transaction_PeekSortKey" stack="push"/>    
 	            		</stateChange>
-
-				<stateChange>
-	                    		<stateAttribute type="location" value="CurrentThread" />
-	                    		<stateAttribute type="constant" value="cpu" />
-					<stateValue type="eventField" value="cpu" />
-				</stateChange>
 			</action>
 
 			<action id="push_PriorityQueue_Transaction_PopSequence">
@@ -1031,12 +998,6 @@
 	                    		<stateAttribute type="constant" value="CallStack" />
 					<stateValue type="string" value="PriorityQueue_Transaction_PopSequence" stack="push"/>    
 	            		</stateChange>
-
-				<stateChange>
-	                    		<stateAttribute type="location" value="CurrentThread" />
-	                    		<stateAttribute type="constant" value="cpu" />
-					<stateValue type="eventField" value="cpu" />
-				</stateChange>
 			</action>
 
 			<action id="push_TaskTracker_RunAndPopNextTask">
@@ -1136,12 +1097,15 @@
 	                    		<stateAttribute type="constant" value="CallStack" />
 					<stateValue type="string" value="SchedulerWorker_BeginUnusedPeriod" stack="push"/>    
 	            		</stateChange>
+			</action>
 
+			<action id="push_PriorityQueue_Transaction_IsEmpty">
+				<!-- Push the current event to the thread's callstack -->
 				<stateChange>
 	                    		<stateAttribute type="location" value="CurrentThread" />
-	                    		<stateAttribute type="constant" value="cpu" />
-					<stateValue type="eventField" value="cpu" />
-				</stateChange>
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="PriorityQueue_Transaction_IsEmpty" stack="push"/>    
+	            		</stateChange>
 			</action>
 
 			
@@ -1185,6 +1149,18 @@
 
 			</action>
 
+<<<<<<< HEAD
+=======
+			<action id="push_RecordLatencyHistogram">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Record Latency Histogram" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+>>>>>>> 6beb9bcd... The XML view showing the executions of tasks per thread
 
 			<action id="push_load_page">
 				<!-- Push the current event to the thread's callstack -->
@@ -1271,10 +1247,22 @@
 			<fsm id="Chrome_task_analysis" initial="new_task">
 				<state id="new_task">
 					<transition event="chrome5:TaskTracker_RunAndPopNextTask" target="in_thread" action="entering_request:push_take_task"/> 
+					<transition event="chrome:SchedulerWorker_Delegate_WaitForWork" target="in_thread" action="entering_request:push_SchedulerWorker_Delegate_WaitForWork"/>
 				</state> 
 				<state id="in_thread">
 					<transition event="chrome4:TaskAnnotator_RunTask" cond="same_thread:same_taskID" target="in_thread" action="pop_event_name:push_run_task"/>
 					<transition event="chrome4:TaskAnnotator_Task_Completed" cond="same_thread:same_taskID" target="end_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_GetLastUsedTime" cond="same_thread" target="in_thread" action="push_SchedulerWorker_GetLastUsedTime"/>
+					<transition event="chrome:SchedulerWorker_GetLastUsedTime_END" cond="same_thread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:PriorityQueue_Transaction_IsEmpty" cond="same_thread" target="in_thread" action="push_PriorityQueue_Transaction_IsEmpty"/>
+					<transition event="chrome:PriorityQueue_Transaction_IsEmpty_END" cond="same_thread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_BeginUnusedPeriod" cond="same_thread" target="in_thread" action="push_SchedulerWorker_BeginUnusedPeriod"/>
+					<transition event="chrome:SchedulerWorker_BeginUnusedPeriod_END" cond="same_thread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:PriorityQueue_Transaction_PeekSortKey" cond="same_thread" target="in_thread" action="push_PriorityQueue_Transaction_PeekSortKey"/>
+					<transition event="chrome:PriorityQueue_Transaction_PeekSortKey_END" cond="same_thread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:PriorityQueue_Transaction_PopSequence" cond="same_thread" target="in_thread" action="push_PriorityQueue_Transaction_PopSequence"/>
+					<transition event="chrome:PriorityQueue_Transaction_PopSequence_END" cond="same_thread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:SchedulerWorker_Delegate_WaitForWork_END" cond="same_thread" target="end_thread" action="pop_event_name"/>
 					<transition event="chrome:CoordinatorProxy_StopAndFlush" target="end_thread" action="pop_all"/>
 				</state>
 				<final id="end_thread"/>
