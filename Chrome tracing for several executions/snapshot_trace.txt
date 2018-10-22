@@ -1,0 +1,10 @@
+lttng create SESSION_NAME --snapshot
+lttng enable-channel --num-subbuf=8 --subbuf-size=8M -k CHANNEL_NAME
+lttng enable-channel --num-subbuf=8 --subbuf-size=8M -u CHANNEL_NAME
+lttng add-context -u --type=vpid -c CHANNEL_NAME
+lttng add-context -k -t tid -c CHANNEL_NAME
+lttng add-context -u -t vtid -c CHANNEL_NAME
+lttng enable-event --syscall -k -a -c CHANNEL_NAME
+lttng enable-event -k sched* -c CHANNEL_NAME
+lttng enable-event -u -a -c CHANNEL_NAME
+lttng start
