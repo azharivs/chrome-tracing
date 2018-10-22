@@ -38,16 +38,6 @@ def FindJank(filename):
         os.system(snapshot_stop)
   shutil.move(filename,'./bk')	    
 while True:
-    #if len(os.listdir('./out')) != 0:
     for root, dirs, files in os.walk("out"):  
       for filename in files:
-	#print os.path.abspath(filename)
         FindJank(os.path.join(root, filename))
-        #if (filename != prev_filename) or (counter == 0):
-            #prev_filename = filename
-            #os.system(move_traces)
-	    #counter = 1
-            #if counter > 4:
-            #print "Cutting this file to bk2222: ", filename	    
-	    #os.system(move_traces)
-
