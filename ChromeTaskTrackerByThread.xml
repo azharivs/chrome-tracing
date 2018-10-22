@@ -1118,6 +1118,16 @@
 
 			</action>
 
+			<action id="push_ImportantFileWriter_WriteNow">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="ImportantFileWriter_WriteNow" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
 			<action id="push_task_queued">
 				<!-- Push the current event to the thread's callstack -->
 				<stateChange>
@@ -1170,6 +1180,97 @@
 
 			</action>
 >>>>>>> 6beb9bcd... The XML view showing the executions of tasks per thread
+
+			<action id="push_GpuChannelHost_Send_StartWrapUnique">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="GpuChannelHost_Send:StartWrapUnique" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
+
+			<action id="push_BelongsToCurrentThread">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="BelongsToCurrentThread" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
+			<action id="push_message_set_unblock">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="message_set_unblock" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
+			<action id="push_message_is_sync">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="message_is_sync" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
+			<action id="push_io_thread_PostTask">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="io_thread_PostTask" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
+			<action id="push_Startbase_WaitableEvent_done_event">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="Startbase_WaitableEvent_done_event" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
+			<action id="push_IPC_PendingSyncMsg_pending_sync">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="IPC_PendingSyncMsg_pending_sync" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
+			<action id="push_io_thread_PostTask2">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="io_thread_PostTask" stack="push"/>    
+	            		</stateChange>
+
+			</action>
+
+			<action id="push_pending_sync_done_event_Wait">
+				<!-- Push the current event to the thread's callstack -->
+				<stateChange>
+	                    		<stateAttribute type="location" value="CurrentThread" />
+	                    		<stateAttribute type="constant" value="CallStack" />
+					<stateValue type="string" value="pending_sync_done_event_Wait" stack="push"/>    
+	            		</stateChange>
+
+			</action>
 
 
 			<action id="push_load_page">
@@ -1247,18 +1348,30 @@
 			<fsm id="Chrome_analysis" initial="new_task">
 				<state id="new_task">
 					<transition event="chrome5:TaskTracker_WillPostTask" target="in_thread" action="entering_request:push_task_posted"/> 
+					<transition event="chrome6:GpuChannelHost_Send_StartWrapUnique" target="in_thread" action="entering_request:push_GpuChannelHost_Send_StartWrapUnique"/> 
 				</state> 
 				<state id="in_thread">
 					<transition event="chrome4:TaskAnnotator_WillQueueTask" cond="same_thread:same_taskID" target="end_thread" action="pop_event_name"/>
 					<transition event="chrome:CoordinatorProxy_StopAndFlush" target="end_thread" action="pop_all"/>
+					<transition event="chrome6:BelongsToCurrentThread" cond="same_thread" target="in_thread" action="pop_event_name:push_BelongsToCurrentThread"/> 
+					<transition event="chrome6:message_set_unblock" cond="same_thread" target="in_thread" action="pop_event_name:push_message_set_unblock"/> 
+					<transition event="chrome6:message_is_sync" cond="same_thread" target="in_thread" action="pop_event_name:push_message_is_sync"/> 
+					<transition event="chrome6:io_thread_PostTask" cond="same_thread" target="in_thread" action="pop_event_name:push_io_thread_PostTask"/> 
+					<transition event="chrome6:io_thread_PostTask_END" cond="same_thread" target="end_thread" action="pop_event_name"/> 
+					<transition event="chrome6:Startbase_WaitableEvent_done_event" cond="same_thread" target="in_thread" action="pop_event_name:push_Startbase_WaitableEvent_done_event"/> 
+					<transition event="chrome6:IPC_PendingSyncMsg_pending_sync" cond="same_thread" target="in_thread" action="pop_event_name:push_IPC_PendingSyncMsg_pending_sync"/> 
+					<transition event="chrome6:io_thread_PostTask2" cond="same_thread" target="in_thread" action="pop_event_name:push_io_thread_PostTask2"/> 
+					<transition event="chrome6:pending_sync_done_event_Wait" cond="same_thread" target="in_thread" action="pop_event_name:push_pending_sync_done_event_Wait"/> 
+					<transition event="chrome6:GpuChannelHost_Send_END_pending_sync_done_event_Wait_END" cond="same_thread" target="end_thread" action="pop_event_name"/> 
 				</state>
 				<final id="end_thread"/>
 			</fsm>
 			<fsm id="Chrome_task_analysis" initial="new_task">
 				<state id="new_task">
 					<transition event="chrome5:TaskTracker_RunAndPopNextTask" target="in_thread" action="entering_request:push_take_task"/> 
-					<transition event="chrome:SchedulerWorker_Delegate_WaitForWork" target="in_thread" action="entering_request:push_SchedulerWorker_Delegate_WaitForWork"/>
-				</state> 
+					<transition event="chrome:Delegate_WaitForWork" target="in_thread" action="entering_request:push_SchedulerWorker_Delegate_WaitForWork"/>
+					<transition event="chrome:ImportantFileWriter_WriteNow" target="in_thread" action="entering_request:push_ImportantFileWriter_WriteNow"/>
+				</state>
 				<state id="in_thread">
 					<transition event="chrome4:TaskAnnotator_RunTask" cond="same_thread:same_taskID" target="in_thread" action="pop_event_name:push_run_task"/>
 					<transition event="chrome4:TaskAnnotator_Task_Completed" cond="same_thread:same_taskID" target="in_thread" action="pop_event_name"/>
@@ -1274,8 +1387,9 @@
 					<transition event="chrome:PriorityQueue_Transaction_PopSequence_END" cond="same_thread" target="in_thread" action="pop_event_name"/>
 					<transition event="chrome:Sequence_PushTask" cond="same_thread" target="in_thread" action="push_Sequence_PushTask"/>
 					<transition event="chrome:Sequence_PushTask_END" cond="same_thread" target="in_thread" action="pop_event_name"/>
+					<transition event="chrome:ImportantFileWriter_WriteNow_END" cond="same_thread" target="end_thread" action="pop_event_name"/>
 					<transition event="chrome:TaskTracker_RunAndPopNextTask_END" target="end_thread" action="pop_event_name"/>
-					<transition event="chrome:SchedulerWorker_Delegate_WaitForWork_END" cond="same_thread" target="end_thread" action="pop_event_name"/>
+					<transition event="chrome:Delegate_WaitForWork_END" cond="same_thread" target="end_thread" action="pop_event_name"/>
 					<transition event="chrome:CoordinatorProxy_StopAndFlush" target="end_thread" action="pop_all"/>
 				</state>
 				<final id="end_thread"/>
