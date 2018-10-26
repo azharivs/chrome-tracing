@@ -91,7 +91,7 @@ void (*tp_ptr)(const char*, const char*, int);
 
 
 // Majid end
-  printf("------------------------------PostTask---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number());
+  //printf("------------------------------PostTask---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number());
 
   TRACE_EVENT0("dorsal", "PostTask");
   PostDelayedTask(from_here, std::move(task), TimeDelta());
@@ -131,7 +131,7 @@ void (*tp_ptr)(const char*, const char*, int, long int);
 
 // Majid end
 
-  printf("------------------------------PostDelayedTask---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \nTime Delta: %ld \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number(), delay.InNanoseconds());
+  //printf("------------------------------PostDelayedTask---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \nTime Delta: %ld \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number(), delay.InNanoseconds());
 
   TRACE_EVENT0("dorsal", "PostDelayedTask");
   PostDelayedTaskWithTraits(from_here, TaskTraits(), std::move(task), delay);
@@ -171,7 +171,7 @@ void (*tp_ptr)(const char*, const char*, int);
 
 // Majid end
 
-  printf("------------------------------PostTaskAndReply---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number());
+  //printf("------------------------------PostTaskAndReply---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number());
   TRACE_EVENT0("dorsal", "PostTaskAndReply");
   PostTaskWithTraitsAndReply(from_here, TaskTraits(), std::move(task),
                              std::move(reply));
@@ -211,7 +211,7 @@ void (*tp_ptr)(const char*, const char*, int, const char*);
 
 // Majid end
 
-  printf("------------------------------PostTaskWithTraits---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \nTask Priority: %s \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number(), base::TaskPriorityToString(traits.priority()));
+  //printf("------------------------------PostTaskWithTraits---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \nTask Priority: %s \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number(), base::TaskPriorityToString(traits.priority()));
   TRACE_EVENT0("dorsal", "PostTaskWithTraits");
   PostDelayedTaskWithTraits(from_here, traits, std::move(task), TimeDelta());
   TRACE_EVENT0("dorsal", "PostTaskWithTraits_END");
@@ -251,7 +251,7 @@ void (*tp_ptr)(const char*, const char*, int, const char*, long int);
 
 // Majid end
 
-  printf("------------------------------PostDelayedTaskWithTraits---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \nTask Priority: %s \nTime Delta: %ld \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number(), base::TaskPriorityToString(traits.priority()), delay.InNanoseconds());
+  //printf("------------------------------PostDelayedTaskWithTraits---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \nTask Priority: %s \nTime Delta: %ld \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number(), base::TaskPriorityToString(traits.priority()), delay.InNanoseconds());
   TRACE_EVENT0("dorsal", "PostDelayedTaskWithTraits");
   DCHECK(TaskScheduler::GetInstance())
       << "Ref. Prerequisite section of post_task.h.\n\n"
@@ -297,7 +297,7 @@ void (*tp_ptr)(const char*, const char*, int, const char*);
 
 // Majid end
 
-  printf("------------------------------PostTaskWithTraitsAndReply---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \nTask Priority: %s \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number(), base::TaskPriorityToString(traits.priority()));
+  //printf("------------------------------PostTaskWithTraitsAndReply---------------------------------\nFunction name: %s \nFile name: %s \nLine number: %d \nTask Priority: %s \n\n\n", from_here.function_name(), from_here.file_name(), from_here.line_number(), base::TaskPriorityToString(traits.priority()));
 
   //TRACE_EVENT2("dorsal", "taskscheduler", "traits", (task).posted_from.file_name(), "reply", (task).posted_from.file_name()); 
   TRACE_EVENT0("dorsal", "PostTaskWithTraitsAndReply");
@@ -338,7 +338,7 @@ void (*tp_ptr)(const char*);
 // Majid end
 
 
-  printf("------------------------------CreateTaskRunnerWithTraits---------------------------------\nTask Priority: %s \n\n\n", base::TaskPriorityToString(traits.priority()));
+  //printf("------------------------------CreateTaskRunnerWithTraits---------------------------------\nTask Priority: %s \n\n\n", base::TaskPriorityToString(traits.priority()));
   TRACE_EVENT0("dorsal", "CreateTaskRunnerWithTraits");
   DCHECK(TaskScheduler::GetInstance())
       << "Ref. Prerequisite section of post_task.h.\n\n"
@@ -381,7 +381,7 @@ void (*tp_ptr)(const char*);
 
 // Majid end
 
-  printf("------------------------------CreateSequencedTaskRunnerWithTraits---------------------------------\nTask Priority: %s \n\n\n", base::TaskPriorityToString(traits.priority()));
+  //printf("------------------------------CreateSequencedTaskRunnerWithTraits---------------------------------\nTask Priority: %s \n\n\n", base::TaskPriorityToString(traits.priority()));
   TRACE_EVENT0("dorsal", "CreateSequencedTaskRunnerWithTraits");
   DCHECK(TaskScheduler::GetInstance())
       << "Ref. Prerequisite section of post_task.h.\n\n"
@@ -425,7 +425,7 @@ void (*tp_ptr)(const char*);
 
 // Majid end
 
-  printf("------------------------------CreateSingleThreadTaskRunnerWithTraits---------------------------------\nTask Priority: %s \nThread_mode: %d \n\n\n", base::TaskPriorityToString(traits.priority()), thread_mode);
+  //printf("------------------------------CreateSingleThreadTaskRunnerWithTraits---------------------------------\nTask Priority: %s \nThread_mode: %d \n\n\n", base::TaskPriorityToString(traits.priority()), thread_mode);
   TRACE_EVENT0("dorsal", "CreateSingleThreadTaskRunnerWithTraits");
   DCHECK(TaskScheduler::GetInstance())
       << "Ref. Prerequisite section of post_task.h.\n\n"
@@ -471,7 +471,7 @@ void (*tp_ptr)(const char*);
 // Majid end
 
 
-  printf("------------------------------CreateCOMSTATaskRunnerWithTraits---------------------------------\nTask Priority: %s \nThread_mode: %d \n\n\n", base::TaskPriorityToString(traits.priority()), thread_mode);
+  //printf("------------------------------CreateCOMSTATaskRunnerWithTraits---------------------------------\nTask Priority: %s \nThread_mode: %d \n\n\n", base::TaskPriorityToString(traits.priority()), thread_mode);
   TRACE_EVENT0("dorsal", "CreateCOMSTATaskRunnerWithTraits");
   DCHECK(TaskScheduler::GetInstance())
       << "Ref. Prerequisite section of post_task.h.\n\n"
