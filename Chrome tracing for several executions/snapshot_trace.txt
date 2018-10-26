@@ -6,5 +6,7 @@ lttng add-context -k -t tid -c CHANNEL_NAME
 lttng add-context -u -t vtid -c CHANNEL_NAME
 lttng enable-event --syscall -k -a -c CHANNEL_NAME
 lttng enable-event -k sched* -c CHANNEL_NAME
+lttng enable-event -k irq* -c CHANNEL_NAME
+lttng enable-event -k timer_hrtimer* -c CHANNEL_NAME
 lttng enable-event -u -a -c CHANNEL_NAME
 lttng start
