@@ -4,6 +4,7 @@ import gzip
 import json
 import os
 import shutil
+import time
 
 snapshot_start='lttng snapshot record\n'
 snapshot_stop='lttng stop\nlttng start\n'
@@ -32,7 +33,7 @@ def FindJank(filename):
    # Find jank on the main thread
     for event in data['traceEvents']:
       if 'tid' in event and event['tid'] == browser_main_thread and 'dur' in event and event['dur'] > 100000:
-        os.system(snapshot_start)
+	os.system(snapshot_start)
 	os.system(get_time_nano)
         print "%s  ==  Event '%s' last '%d'" % (filename, event["name"], event["dur"])
         os.system(snapshot_stop)
