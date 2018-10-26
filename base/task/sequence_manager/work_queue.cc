@@ -150,7 +150,7 @@ void WorkQueue::ReloadEmptyImmediateQueue() {
 
 TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   TRACE_EVENT0("dorsal", "WorkQueue::TakeTaskFromWorkQueue");
-  printf("------------------------------TakeTaskFromWorkQueue---------------------------------\n\n");
+  //printf("------------------------------TakeTaskFromWorkQueue---------------------------------\n\n");
   DCHECK(work_queue_sets_);
   DCHECK(!tasks_.empty());
 
@@ -172,7 +172,7 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
 
 bool WorkQueue::RemoveAllCanceledTasksFromFront() {
   TRACE_EVENT0("dorsal", "WorkQueue::RemoveAllCanceledTasksFromFront");
-  printf("------------------------------RemoveAllCanceledTasksFromFront---------------------------------\n\n");
+  //printf("------------------------------RemoveAllCanceledTasksFromFront---------------------------------\n\n");
   DCHECK(work_queue_sets_);
   bool task_removed = false;
   while (!tasks_.empty() &&
