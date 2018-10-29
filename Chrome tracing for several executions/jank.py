@@ -6,9 +6,12 @@ import os
 import shutil
 import time
 
+lttng_rotate='lttng rotate\n'
 snapshot_start='lttng snapshot record\n'
 snapshot_stop='lttng stop\nlttng start\n'
 get_time_nano='date +"%T.%9N"'
+oldtime = 0
+check='True'
 
 def OpenTraceFile(file_path, mode):
   if file_path.endswith('.gz'):
@@ -29,16 +32,21 @@ def FindJank(filename):
           browser_main_thread = event['tid']
     if browser_main_thread == -1:
       return
-
+   
    # Find jank on the main thread
     for event in data['traceEvents']:
-      if 'tid' in event and event['tid'] == browser_main_thread and 'dur' in event and event['dur'] > 100000:
-	os.system(snapshot_start)
+      if 'tid' in event and event['tid'] == browser_main_thread and 'dur' in event and event['dur'] > 100000 and (((event["name"]) == ("GpuChannelHost::Send")) or ((event["name"]) == ("ViewHostMsg_ClosePage_ACK"))):
+	print "%s  ==  Event '%s' last '%d'" % (filename, event["name"], event["dur"])
 	os.system(get_time_nano)
-        print "%s  ==  Event '%s' last '%d'" % (filename, event["name"], event["dur"])
-        os.system(snapshot_stop)
   shutil.move(filename,'./bk')	    
 while True:
-    for root, dirs, files in os.walk("out"):  
+    for root, dirs, files in os.walk("out"):
+      if check == True:
+          oldtime = time.time()
+	  check = False
       for filename in files:
         FindJank(os.path.join(root, filename))
+# checking if 5 seconds has been passed
+      if time.time() - oldtime > 4:
+          os.system(lttng_rotate)
+	  check = True
