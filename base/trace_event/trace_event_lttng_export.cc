@@ -261,8 +261,9 @@ void TraceEventLttngExport::AddLttngEvent(
   }
 
   std::string arg_values_string[3]; //TODO no need to convert into string pass as is
-  for (int i = 0; i < num_args; i++) {
+  for (int i = 0; (i < num_args) && (i < 3); i++) {
     if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
+      printf("TRACE_VALUE_TYPE_CONVERTABLE\n");
       // Temporarily do nothing here. This function consumes 1/3 to 1/2 of
       // *total* process CPU time when ETW tracing, and many of the strings
       // created exceed WPA's 4094 byte limit and are shown as:
@@ -276,7 +277,6 @@ void TraceEventLttngExport::AddLttngEvent(
     }
   }
 
-  void (*tp_ptr)(const char *,const char *);
   char *error;
   if (!soLoaded){
     tppHandle = dlopen("/home/azhari/liblttng-cr-tp.so", RTLD_NOW);// | RTLD_GLOBAL | RTLD_NODELETE);
@@ -289,13 +289,43 @@ void TraceEventLttngExport::AddLttngEvent(
     }
   }
   dlerror();
-  *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z7genericPKcS0_");
-  if ((error = dlerror()) != NULL)  {
-    fprintf(stderr, "00: Upon dlsym: %s\n", error);
-  }
+  void (*tp_ptr0)(const char *,const char *);      
+  void (*tp_ptr1)(const char *,const char *, const char *, const char *);      
+  void (*tp_ptr2)(const char *,const char *, const char *, const char *, const char *, const char *);      
+  void (*tp_ptr3)(const char *,const char *, const char *, const char *, const char *, const char *, const char *, const char *);      
   //pid_t pid = getpid();
   //pid_t tid = syscall(SYS_gettid);
-  (*tp_ptr)((const char *) name, (const char *) phase_string);
+  switch (num_args){
+    case 0:
+      *(void **) (&tp_ptr0) = dlsym(tppHandle, "_Z8generic0PKcS0_");
+      if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, "00: Upon dlsym: %s\n", error);
+      }
+      (*tp_ptr0)((const char *) name, (const char *) phase_string);
+      break;
+    case 1:
+      *(void **) (&tp_ptr1) = dlsym(tppHandle, "_Z8generic1PKcS0_S0_S0_");
+      if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, "00: Upon dlsym: %s\n", error);
+      }
+      (*tp_ptr1)((const char *) name, (const char *) phase_string, (const char *) arg_names[0], (const char *) arg_values_string[0].c_str());
+      break;
+    case 2:
+      *(void **) (&tp_ptr2) = dlsym(tppHandle, "_Z8generic2PKcS0_S0_S0_S0_S0_");
+      if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, "00: Upon dlsym: %s\n", error);
+      }
+      (*tp_ptr2)((const char *) name, (const char *) phase_string, (const char *) arg_names[0], (const char *) arg_values_string[0].c_str(), (const char *) arg_names[1], (const char *) arg_values_string[1].c_str());
+      break;
+    case 3:
+    default:
+      *(void **) (&tp_ptr3) = dlsym(tppHandle, "_Z8generic3PKcS0_S0_S0_S0_S0_S0_S0_");
+      if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, "00: Upon dlsym: %s\n", error);
+      }
+      (*tp_ptr3)((const char *) name, (const char *) phase_string, (const char *) arg_names[0], (const char *) arg_values_string[0].c_str(), (const char *) arg_names[1], (const char *) arg_values_string[1].c_str(), (const char *) arg_names[2], (const char *) arg_values_string[2].c_str());
+      break;
+  }
   //std::cout << "....." << (int) tid << ": dlsym\n";
   /* EventWriteChromeEvent(
       name, phase_string, num_args > 0 ? arg_names[0] : "",
@@ -323,7 +353,7 @@ void TraceEventLttngExport::AddLttngCompleteEndEvent(const char* name) {
     }
   }
   dlerror();
-  *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z7genericPKcS0_"); //the T symbol obtained via nm liblttng-cr-tp.so
+  *(void **) (&tp_ptr) = dlsym(tppHandle, "_Z8generic0PKcS0_"); //the T symbol obtained via nm liblttng-cr-tp.so
   if ((error = dlerror()) != NULL)  {
     fprintf(stderr, "00: Upon dlsym: %s\n", error);
   }

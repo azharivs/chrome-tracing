@@ -20,7 +20,7 @@
 //used to simply say which function is being executed
 TRACEPOINT_EVENT(
     chrome,
-    generic,
+    generic0,
     TP_ARGS(
         const char*, name,
         const char*, phase
@@ -28,6 +28,72 @@ TRACEPOINT_EVENT(
     TP_FIELDS(
         ctf_string(name, name)
         ctf_string(phase, phase)
+    )
+)
+
+//used to simply say which function is being executed
+TRACEPOINT_EVENT(
+    chrome,
+    generic1,
+    TP_ARGS(
+        const char*, name,
+        const char*, phase,
+        const char*, arg1,
+        const char*, val1
+    ),
+    TP_FIELDS(
+        ctf_string(name, name)
+        ctf_string(phase, phase)
+        ctf_string(arg1, arg1)
+        ctf_string(val1, val1)
+    )
+)
+
+//used to simply say which function is being executed
+TRACEPOINT_EVENT(
+    chrome,
+    generic2,
+    TP_ARGS(
+        const char*, name,
+        const char*, phase,
+        const char*, arg1,
+        const char*, val1,
+        const char*, arg2,
+        const char*, val2
+    ),
+    TP_FIELDS(
+        ctf_string(name, name)
+        ctf_string(phase, phase)
+        ctf_string(arg1, arg1)
+        ctf_string(val1, val1)
+        ctf_string(arg2, arg2)
+        ctf_string(val2, val2)
+    )
+)
+
+//used to simply say which function is being executed
+TRACEPOINT_EVENT(
+    chrome,
+    generic3,
+    TP_ARGS(
+        const char*, name,
+        const char*, phase,
+        const char*, arg1,
+        const char*, val1,
+        const char*, arg2,
+        const char*, val2,
+        const char*, arg3,
+        const char*, val3
+    ),
+    TP_FIELDS(
+        ctf_string(name, name)
+        ctf_string(phase, phase)
+        ctf_string(arg1, arg1)
+        ctf_string(val1, val1)
+        ctf_string(arg2, arg2)
+        ctf_string(val2, val2)
+        ctf_string(arg3, arg3)
+        ctf_string(val3, val3)
     )
 )
 
