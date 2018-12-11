@@ -32,12 +32,16 @@ def FindJank(filename):
           browser_main_thread = event['tid']
     if browser_main_thread == -1:
       return
-   
+
    # Find jank on the main thread
     for event in data['traceEvents']:
-      if 'tid' in event and event['tid'] == browser_main_thread and 'dur' in event and event['dur'] > 100000 and (((event["name"]) == ("GpuChannelHost::Send")) or ((event["name"]) == ("ViewHostMsg_ClosePage_ACK"))):
-	print "%s  ==  Event '%s' last '%d'" % (filename, event["name"], event["dur"])
-	os.system(get_time_nano)
+        if 'tid' in event and event['tid'] == browser_main_thread and 'dur' in event and event['dur'] > 100000:
+	  print "%s  ==  Event '%s' last '%d'" % (filename, event["name"], event["dur"])
+	  if 'src_func' in event['args']:
+	    print (event['args']['src_func'])
+	  if 'src_file' in event['args']:
+	    print (event['args']['src_file'])
+	  os.system(get_time_nano)
   shutil.move(filename,'./bk')	    
 while True:
     for root, dirs, files in os.walk("out"):
@@ -47,6 +51,6 @@ while True:
       for filename in files:
         FindJank(os.path.join(root, filename))
 # checking if 5 seconds has been passed
-      if time.time() - oldtime > 4:
+      '''if time.time() - oldtime > 4:
           os.system(lttng_rotate)
-	  check = True
+	  check = True'''
